@@ -25,7 +25,7 @@ let user=null;
 let dadosCache=[];
 let imagemBase64="";
 
-/* IMAGEM */
+/* 📸 IMAGEM */
 document.getElementById("imagem").addEventListener("change",e=>{
 const file=e.target.files[0];
 const reader=new FileReader();
@@ -33,7 +33,7 @@ reader.onload=ev=>imagemBase64=ev.target.result;
 reader.readAsDataURL(file);
 });
 
-/* LOGIN */
+/* 🔐 LOGIN */
 window.loginGoogle=()=>signInWithPopup(auth,new GoogleAuthProvider());
 window.logout=()=>signOut(auth);
 
@@ -43,7 +43,7 @@ document.getElementById("userInfo").innerText =
 user?user.displayName:"Não logado";
 });
 
-/* PUBLICAR */
+/* 📦 PUBLICAR */
 window.publicar=async()=>{
 if(!user)return alert("login!");
 
@@ -64,14 +64,14 @@ interessado:null
 alert("Publicado!");
 };
 
-/* ❤️ LIKE */
+/* ❤️ LIKE (TOGGLE) */
 window.like=async(id,likes)=>{
 if(!user)return;
 
 const ref=doc(db,"itens",id);
 const nome=user.displayName;
 
-if(likes.includes(nome)){
+if((likes||[]).includes(nome)){
 await updateDoc(ref,{likes:arrayRemove(nome)});
 }else{
 await updateDoc(ref,{likes:arrayUnion(nome)});
@@ -98,7 +98,7 @@ time:Date.now()
 });
 };
 
-/* 🟢 ACEITAR TROCA */
+/* 🟢 ACEITAR */
 window.aceitar=async(id)=>{
 const ref=doc(db,"itens",id);
 
@@ -107,7 +107,7 @@ status:"aceito"
 });
 };
 
-/* 🔴 RECUSAR TROCA */
+/* 🔴 RECUSAR */
 window.recusar=async(id)=>{
 const ref=doc(db,"itens",id);
 
@@ -117,9 +117,10 @@ interessado:null
 });
 };
 
-/* 💬 ENVIAR MSG */
+/* 💬 ENVIAR MENSAGEM */
 window.enviarMsg=async(id)=>{
-const msg=document.getElementById("msg-"+id).value;
+const input=document.getElementById("msg-"+id);
+const msg=input.value;
 if(!msg)return;
 
 const ref=doc(db,"itens",id);
@@ -132,26 +133,31 @@ time:Date.now()
 })
 });
 
-document.getElementById("msg-"+id).value="";
+input.value="";
 };
 
-/* FILTRO */
+/* 🔎 FILTRO */
 window.aplicarFiltro=()=>{
-render(dadosCache,
+render(
+dadosCache,
 filtroCidade.value.toLowerCase(),
 filtroCategoria.value
 );
 };
 
+/* 🧱 RENDER */
 const lista=document.getElementById("listaItens");
 
 function render(data,cidadeF="",catF=""){
 
 lista.innerHTML="";
 
-data.filter(i=>{
-return i.cidade.toLowerCase().includes(cidadeF)&&(!catF||i.categoria===catF);
-}).forEach(i=>{
+data
+.filter(i=>{
+return i.cidade.toLowerCase().includes(cidadeF)
+&& (!catF || i.categoria===catF);
+})
+.forEach(i=>{
 
 const likes=i.likes||[];
 const chat=i.chat?.[user?.uid]||[];
@@ -163,7 +169,7 @@ lista.innerHTML+=`
 <p>${i.cidade} | ${i.categoria}</p>
 <p>${i.descricao}</p>
 
-${i.imagem?`<img src="${i.imagem}" style="width:100%">`:""}
+${i.imagem?`<img src="${i.imagem}" style="width:100%;border-radius:10px">`:""}
 
 ${i.status==="negociacao"?'<div class="badge">🟡 Em negociação</div>':""}
 ${i.status==="aceito"?'<div class="badge" style="background:green">🟢 Aceito</div>':""}
@@ -198,6 +204,7 @@ ${chat.map(m=>`<p>👤 ${m.user}: ${m.msg}</p>`).join("")}
 });
 }
 
+/* 🔄 LIVE UPDATE */
 onSnapshot(collection(db,"itens"),snap=>{
 dadosCache=[];
 snap.forEach(d=>dadosCache.push({id:d.id,...d.data()}));
