@@ -22,13 +22,19 @@ alert("Preencha os campos!");
 return;
 }
 
+let imagem = document.getElementById("imagem") 
+? document.getElementById("imagem").value 
+: "";
+
 itens.push({
 id: Date.now(),
 nome,
 cidade,
 descricao,
+imagem,
 owner: user.nome,
-chat: []
+chat: [],
+likes: []
 });
 
 localStorage.setItem("itens", JSON.stringify(itens));
@@ -37,6 +43,30 @@ document.getElementById("nome").value="";
 document.getElementById("cidade").value="";
 document.getElementById("descricao").value="";
 
+if(document.getElementById("imagem")){
+document.getElementById("imagem").value="";
+}
+
+alert("Item publicado com sucesso 🌱");
+
+render();
+}
+
+/* LIKE */
+function like(id){
+let item = itens.find(i => i.id === id);
+
+if(!item.likes){
+item.likes = [];
+}
+
+if(!item.likes.includes(user.nome)){
+item.likes.push(user.nome);
+}else{
+item.likes = item.likes.filter(u => u !== user.nome);
+}
+
+localStorage.setItem("itens", JSON.stringify(itens));
 render();
 }
 
@@ -52,7 +82,7 @@ localStorage.setItem("itens", JSON.stringify(itens));
 render();
 }
 
-/* EXCLUIR PUBLICAÇÃO */
+/* EXCLUIR */
 function excluir(id){
 if(!confirm("Tem certeza que deseja excluir esta publicação?")) return;
 
@@ -77,11 +107,21 @@ let isOwner = user && i.owner === user.nome;
 lista.innerHTML += `
 <div class="item">
 <h3>${i.nome}</h3>
+
+${i.imagem ? `
+<img src="${i.imagem}" 
+style="width:100%;border-radius:10px;margin-top:8px;">
+` : ""}
+
 <p>${i.cidade}</p>
 <p>${i.descricao}</p>
 <p class="small">Por: ${i.owner}</p>
 
-<button onclick="chat(${i.id})">Chat</button>
+<button onclick="like(${i.id})">
+❤️ Curtir (${i.likes ? i.likes.length : 0})
+</button>
+
+<button onclick="chat(${i.id})">💬 Chat</button>
 
 ${isOwner ? `
 <button onclick="excluir(${i.id})" style="background:#d32f2f;">
