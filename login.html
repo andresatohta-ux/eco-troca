@@ -6,36 +6,62 @@
 <title>Login - Eco Troca</title>
 
 <style>
-body{
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
 font-family:Arial,sans-serif;
-background:#f5fff5;
+}
+
+body{
+height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-height:100vh;
-margin:0;
+background:linear-gradient(180deg,#e8f5e9,#f1f8e9);
 }
 
-.box{
+/* CARD LOGIN */
+.container{
+width:90%;
+max-width:350px;
 background:white;
-padding:30px;
-border-radius:12px;
-width:350px;
-box-shadow:0 2px 10px rgba(0,0,0,.1);
-}
-
-h2{
+padding:25px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.1);
 text-align:center;
-color:#2e7d32;
 }
 
+/* LOGO */
+.logo{
+font-size:28px;
+font-weight:bold;
+color:#2e7d32;
+margin-bottom:10px;
+}
+
+.subtitle{
+font-size:14px;
+color:#666;
+margin-bottom:20px;
+}
+
+/* INPUTS */
 input{
 width:100%;
 padding:12px;
 margin-top:10px;
-box-sizing:border-box;
+border:1px solid #ddd;
+border-radius:10px;
+font-size:14px;
+outline:none;
 }
 
+input:focus{
+border-color:#43a047;
+}
+
+/* BOTÃO */
 button{
 width:100%;
 padding:12px;
@@ -43,66 +69,58 @@ margin-top:15px;
 background:#43a047;
 color:white;
 border:none;
-border-radius:8px;
+border-radius:10px;
+font-size:15px;
 cursor:pointer;
+transition:0.3s;
 }
 
-a{
-display:block;
-text-align:center;
+button:hover{
+background:#2e7d32;
+}
+
+/* TEXTO */
+.small{
+font-size:12px;
+color:gray;
 margin-top:15px;
-color:#2e7d32;
-text-decoration:none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="container">
+<div class="logo">🌱 Eco Troca</div>
+<div class="subtitle">Entre para trocar itens sustentáveis</div>
 
-<h2>🌱 Login</h2>
-
-<input id="email" placeholder="Email">
-
-<input id="senha" type="password" placeholder="Senha">
+<input id="nome" placeholder="Digite seu nome">
+<input id="cidade" placeholder="Sua cidade">
 
 <button onclick="login()">Entrar</button>
 
-<a href="cadastro.html">Criar conta</a>
-
+<div class="small">Projeto escolar de sustentabilidade</div>
 </div>
 
 <script>
-
 function login(){
+let nome = document.getElementById("nome").value;
+let cidade = document.getElementById("cidade").value;
 
-const email =
-document.getElementById("email").value;
-
-const senha =
-document.getElementById("senha").value;
-
-const usuario =
-JSON.parse(localStorage.getItem(email));
-
-if(usuario && usuario.senha === senha){
-
-localStorage.setItem(
-"usuarioLogado",
-JSON.stringify(usuario)
-);
-
-window.location.href="index.html";
-
-}else{
-
-alert("Email ou senha incorretos");
-
+if(!nome || !cidade){
+alert("Preencha todos os campos!");
+return;
 }
 
-}
+let usuario = {
+nome,
+cidade
+};
 
+localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
+
+window.location.href = "index.html";
+}
 </script>
 
 </body>
