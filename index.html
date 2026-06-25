@@ -266,10 +266,21 @@ Quero Trocar
 <button onclick="publicarItem()">
 Publicar
 </button>
+function publicarItem(){
+
+let usuario =
+JSON.parse(localStorage.getItem("usuarioLogado"));
+
+if(!usuario){
+alert("Faça login para publicar um item.");
+window.location.href="login.html";
+return;
+}
+</button>
 
 </section>
 
-<h2 class="titulo">
+<h2 class="titulo" id="itens">
 Itens Disponíveis
 </h2>
 
