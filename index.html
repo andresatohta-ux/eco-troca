@@ -211,9 +211,9 @@ text-align:center;
 </div>
 
 <nav>
-<a href="#">Início</a>
-<a href="#">Itens</a>
-<a href="#">Sobre</a>
+<a href="#inicio">Início</a>
+<a href="#itens">Itens</a>
+<a href="#sobre">Sobre</a>
 </nav>
 
 <div id="usuario"></div>
@@ -227,7 +227,7 @@ text-align:center;
 Troque objetos usados e ajude o meio ambiente.
 </p>
 
-<button>
+<button onclick="document.querySelector('.formulario').scrollIntoView({behavior:'smooth'})">
 Quero Trocar
 </button>
 
@@ -253,7 +253,7 @@ Quero Trocar
 </section>
 
 <h2 class="titulo">
-Publicar Item
+Itens Disponíveis
 </h2>
 
 <section class="formulario">
@@ -265,7 +265,15 @@ Publicar Item
 <textarea id="descricao" placeholder="Descrição"></textarea>
 
 <button onclick="publicarItem()">
-Publicar
+let usuario =
+JSON.parse(localStorage.getItem("usuarioLogado"));
+
+if(!usuario){
+alert("Faça login para publicar um item.");
+window.location.href="login.html";
+return;
+}
+  Publicar
 </button>
 
 </section>
@@ -276,7 +284,7 @@ Itens Disponíveis
 
 <div id="listaItens"></div>
 
-<footer>
+<footer id="sobre">
 
 <h2>Eco Troca</h2>
 
@@ -284,7 +292,7 @@ Itens Disponíveis
 Projeto Escolar de Sustentabilidade
 </p>
 
-</footer>
+<footer id="sobre">
 
 <script>
 
