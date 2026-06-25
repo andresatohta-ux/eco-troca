@@ -25,14 +25,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.onload = () => {
-
 /* USER */
-let user = JSON.parse(localStorage.getItem("usuarioLogado"));
+let user = JSON.parse(localStorage.getItem("usuarioLogado") || "null");
 
-let usuarioBox = document.getElementById("usuarioBox");
-if(usuarioBox){
-usuarioBox.innerText = user ? "👤 " + user.nome : "Não logado";
+function setUserBox(){
+const box = document.getElementById("usuarioBox");
+if(box){
+box.innerText = user ? "👤 " + user.nome : "Não logado";
+}
 }
 
 /* PUBLICAR */
@@ -43,9 +43,9 @@ alert("Faça login primeiro!");
 return;
 }
 
-let nome = document.getElementById("nome").value;
-let cidade = document.getElementById("cidade").value;
-let descricao = document.getElementById("descricao").value;
+let nome = document.getElementById("nome")?.value;
+let cidade = document.getElementById("cidade")?.value;
+let descricao = document.getElementById("descricao")?.value;
 let imagem = document.getElementById("imagem")?.value || "";
 
 if(!nome || !cidade){
@@ -64,6 +64,7 @@ likes: []
 });
 
 alert("Publicado 🌍");
+
 }
 
 /* EXCLUIR */
@@ -98,15 +99,16 @@ if(!msg) return;
 const ref = doc(db, "itens", id);
 
 await updateDoc(ref, {
-chat: arrayUnion(user.nome + ": " + msg)
+chat: arrayUnion(user?.nome + ": " + msg)
 });
 
 }
 
 /* RENDER */
-window.render = function(){
+function render(){
 
 const lista = document.getElementById("listaItens");
+if(!lista) return;
 
 onSnapshot(collection(db, "itens"), (snapshot) => {
 
@@ -158,8 +160,8 @@ ${chat.map(c => `<div>${c}</div>`).join("")}
 
 }
 
+/* START */
+setUserBox();
 render();
-
-}; // fim window.onload
 
 </script>
