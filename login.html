@@ -19,9 +19,18 @@ display:flex;
 justify-content:center;
 align-items:center;
 background:linear-gradient(180deg,#e8f5e9,#f1f8e9);
+overflow:hidden;
 }
 
-/* CARD */
+.circle{
+position:absolute;
+border-radius:50%;
+background:rgba(67,160,71,0.12);
+}
+
+.c1{width:150px;height:150px;top:10%;left:10%;}
+.c2{width:200px;height:200px;bottom:10%;right:10%;}
+
 .container{
 width:90%;
 max-width:360px;
@@ -30,15 +39,14 @@ padding:30px 25px;
 border-radius:22px;
 box-shadow:0 15px 35px rgba(0,0,0,.12);
 text-align:center;
-animation:fadeIn 0.6s ease;
+animation:fadeIn .6s ease;
+z-index:2;
 }
 
-/* LOGO */
 .logo{
 font-size:34px;
-font-weight:bold;
 color:#2e7d32;
-margin-bottom:5px;
+font-weight:bold;
 }
 
 .subtitle{
@@ -47,14 +55,12 @@ color:#666;
 margin-bottom:20px;
 }
 
-/* INPUTS */
 input{
 width:100%;
 padding:13px;
 margin-top:12px;
 border:1px solid #ddd;
 border-radius:12px;
-font-size:14px;
 outline:none;
 transition:0.3s;
 }
@@ -64,7 +70,6 @@ border-color:#43a047;
 box-shadow:0 0 8px rgba(67,160,71,0.2);
 }
 
-/* BOTÃO */
 button{
 width:100%;
 padding:13px;
@@ -76,58 +81,21 @@ border-radius:12px;
 font-size:15px;
 cursor:pointer;
 transition:0.3s;
-position:relative;
-overflow:hidden;
 }
 
 button:hover{
 background:#2e7d32;
-transform:translateY(-1px);
 }
 
-/* efeito de loading simples */
-button:active{
-transform:scale(0.98);
-}
-
-/* TEXTO */
 .small{
 font-size:12px;
 color:gray;
 margin-top:15px;
 }
 
-/* ANIMAÇÃO */
 @keyframes fadeIn{
-from{
-opacity:0;
-transform:translateY(20px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
-}
-
-/* DECORAÇÃO */
-.circle{
-position:absolute;
-border-radius:50%;
-background:rgba(67,160,71,0.1);
-}
-
-.c1{
-width:120px;
-height:120px;
-top:10%;
-left:10%;
-}
-
-.c2{
-width:160px;
-height:160px;
-bottom:10%;
-right:10%;
+from{opacity:0;transform:translateY(20px);}
+to{opacity:1;transform:translateY(0);}
 }
 </style>
 </head>
@@ -139,19 +107,18 @@ right:10%;
 
 <div class="container">
 <div class="logo">🌱 Eco Troca</div>
-<div class="subtitle">Entre e comece a trocar itens sustentáveis</div>
+<div class="subtitle">Troque itens e ajude o planeta</div>
 
 <input id="nome" placeholder="Seu nome">
 <input id="cidade" placeholder="Sua cidade">
 
-<button onclick="login()">Entrar no App</button>
+<button onclick="login()">Entrar</button>
 
 <div class="small">Projeto escolar de sustentabilidade</div>
 </div>
 
 <script>
 function login(){
-
 let nome = document.getElementById("nome").value;
 let cidade = document.getElementById("cidade").value;
 
@@ -160,14 +127,11 @@ alert("Preencha todos os campos!");
 return;
 }
 
-/* efeito de loading simples */
 let btn = document.querySelector("button");
 btn.innerText = "Entrando...";
 
 setTimeout(() => {
-let usuario = { nome, cidade };
-localStorage.setItem("usuarioLogado", JSON.stringify(usuario));
-
+localStorage.setItem("usuarioLogado", JSON.stringify({nome, cidade}));
 window.location.href = "index.html";
 }, 800);
 }
