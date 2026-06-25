@@ -251,8 +251,10 @@ imagem:imagemBase64||"",
 uid:user.uid,
 owner:user.displayName,
 likes:[],
-chat:[],
-status:"livre"
+status:"livre",
+
+interessado:null,
+propostas:[]
 });
 };
 
@@ -267,27 +269,38 @@ await updateDoc(ref,{likes:arrayUnion(user.uid)});
 }
 };
 
-/* TROCA */
+/* 🔁 INICIAR NEGOCIAÇÃO */
 window.trocar=async(id)=>{
-await updateDoc(doc(db,"itens",id),{
+if(!user)return;
+
+const ref=doc(db,"itens",id);
+
+await updateDoc(ref,{
 status:"negociacao",
-chat:arrayUnion({
+interessado:{
 uid:user.uid,
+nome:user.displayName
+},
+propostas:arrayUnion({
+tipo:"inicio",
 user:user.displayName,
-msg:"Tenho interesse na troca",
+msg:"Iniciou negociação",
 time:Date.now()
 })
 });
 };
 
-/* MSG */
+/* 💬 ENVIAR PROPOSTA */
 window.enviarMsg=async(id)=>{
+if(!user)return;
+
 const input=document.getElementById("msg-"+id);
 const msg=(input?.value||"").trim();
+if(!msg)return;
 
 await updateDoc(doc(db,"itens",id),{
-chat:arrayUnion({
-uid:user.uid,
+propostas:arrayUnion({
+tipo:"msg",
 user:user.displayName,
 msg,
 time:Date.now()
@@ -297,6 +310,36 @@ time:Date.now()
 input.value="";
 };
 
+/* ✔ ACEITAR */
+window.aceitar=async(id)=>{
+if(!user)return;
+
+await updateDoc(doc(db,"itens",id),{
+status:"aceito",
+propostas:arrayUnion({
+tipo:"status",
+user:user.displayName,
+msg:"Negociação aceita",
+time:Date.now()
+})
+});
+};
+
+/* ✖ RECUSAR */
+window.recusar=async(id)=>{
+if(!user)return;
+
+await updateDoc(doc(db,"itens",id),{
+status:"recusado",
+propostas:arrayUnion({
+tipo:"status",
+user:user.displayName,
+msg:"Negociação recusada",
+time:Date.now()
+})
+});
+};
+
 /* RENDER */
 function render(data){
 lista.innerHTML="";
@@ -304,7 +347,7 @@ lista.innerHTML="";
 data.forEach(i=>{
 
 const likes=Array.isArray(i.likes)?i.likes:[];
-const chat=Array.isArray(i.chat)?i.chat:[];
+const propostas=Array.isArray(i.propostas)?i.propostas:[];
 
 lista.innerHTML+=`
 <div class="card">
@@ -314,6 +357,8 @@ lista.innerHTML+=`
 <p>${i.descricao||""}</p>
 
 ${i.status==="negociacao"?'<div class="badge">🟡 Em negociação</div>':""}
+${i.status==="aceito"?'<div class="badge">🟢 Aceito</div>':""}
+${i.status==="recusado"?'<div class="badge">🔴 Recusado</div>':""}
 
 ${i.imagem?`<img src="${i.imagem}">`:""}
 
@@ -322,16 +367,29 @@ ${i.imagem?`<img src="${i.imagem}">`:""}
 </button>
 
 <button class="btn-yellow" onclick="trocar('${i.id}')">
-🔁 Trocar
+🔁 Iniciar negociação
 </button>
+
+${i.status==="negociacao" ? `
+<button class="btn-blue" onclick="aceitar('${i.id}')">✔ Aceitar</button>
+<button class="btn-red" onclick="recusar('${i.id}')">✖ Recusar</button>
+` : ""}
 
 <div style="margin-top:10px">
 
-<input id="msg-${i.id}" placeholder="Mensagem...">
+<input id="msg-${i.id}" placeholder="Proposta...">
 <button class="btn-blue" onclick="enviarMsg('${i.id}')">Enviar</button>
 
 <div class="chat">
-${chat.map(m=>`<p><b>${m.user}</b>: ${m.msg}</p>`).join("")}
+
+${propostas.map(p=>`
+<p>
+<b>${p.user}</b>:
+${p.tipo==="status"?"⚡ ":""}
+${p.msg}
+</p>
+`).join("")}
+
 </div>
 
 </div>
@@ -348,6 +406,5 @@ snap.forEach(d=>data.push({id:d.id,...d.data()}));
 render(data);
 });
 </script>
-
 </body>
 </html>
