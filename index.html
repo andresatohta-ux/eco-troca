@@ -1,4 +1,4 @@
-/* 🔁 PEDIR TROCA (CORRIGIDO + CHAT INICIAL) */
+/* 🔁 PEDIR TROCA + CHAT INICIAL */
 window.trocar = async (id) => {
 if (!user) return;
 
@@ -37,12 +37,12 @@ interessado: null
 });
 };
 
-/* 💬 CHAT */
+/* 💬 ENVIAR MENSAGEM */
 window.enviarMsg = async (id) => {
 if (!user) return;
 
 const input = document.getElementById("msg-" + id);
-const msg = input.value.trim();
+const msg = (input?.value || "").trim();
 if (!msg) return;
 
 await updateDoc(doc(db, "itens", id), {
@@ -56,7 +56,7 @@ time: Date.now()
 input.value = "";
 };
 
-/* 🧱 RENDER (PROTEGIDO) */
+/* 🧱 RENDER (CORRIGIDO E ESTÁVEL) */
 function render(data, cidadeF = "", catF = "") {
 
 lista.innerHTML = "";
@@ -64,17 +64,20 @@ lista.innerHTML = "";
 data
 .filter(i => {
 const cidade = (i.cidade || "").toLowerCase();
-return cidade.includes(cidadeF) && (!catF || i.categoria === catF);
+const categoria = i.categoria || "";
+
+return cidade.includes(cidadeF) && (!catF || categoria === catF);
 })
 .forEach(i => {
 
 const likes = i.likes || [];
 const chat = i.chat || [];
+const isOwner = i.owner === user?.displayName;
 
 lista.innerHTML += `
 <div class="card">
 
-<h3>${i.nome}</h3>
+<h3>${i.nome || ""}</h3>
 <p>${i.cidade || ""} | ${i.categoria || ""}</p>
 <p>${i.descricao || ""}</p>
 
@@ -91,7 +94,7 @@ ${i.status === "aceito" ? '<div class="badge" style="background:green">🟢 Acei
 🔁 Trocar
 </button>
 
-${i.interessado && i.owner === user?.displayName ? `
+${isOwner ? `
 <button class="btn-blue" onclick="aceitar('${i.id}')">✔ Aceitar</button>
 <button class="btn-red" onclick="recusar('${i.id}')">✖ Recusar</button>
 ` : ""}
@@ -100,7 +103,9 @@ ${i.interessado && i.owner === user?.displayName ? `
 <strong>💬 Chat</strong>
 
 <div>
-${chat.map(m => `<p>👤 ${m.user}: ${m.msg}</p>`).join("")}
+${chat.map(m => `
+<p>👤 ${m.user || "user"}: ${m.msg || ""}</p>
+`).join("")}
 </div>
 
 <input id="msg-${i.id}" placeholder="Mensagem...">
