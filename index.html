@@ -165,11 +165,11 @@ let user = null;
 let dadosCache = [];
 let imagemBase64 = "";
 
-/* 📸 IMAGEM */
-document.getElementById("imagem").addEventListener("change", function(e){
+/* IMAGEM */
+document.getElementById("imagem").addEventListener("change", e=>{
 const file = e.target.files[0];
 const reader = new FileReader();
-reader.onload = e => imagemBase64 = e.target.result;
+reader.onload = ev => imagemBase64 = ev.target.result;
 reader.readAsDataURL(file);
 });
 
@@ -213,7 +213,7 @@ chat: []
 alert("Publicado!");
 }
 
-/* ❤️ CURTIR (CORRIGIDO) */
+/* ❤️ CURTIR (TOGGLE REAL) */
 window.like = async function(id, likes){
 
 if(!user){
@@ -224,7 +224,7 @@ return;
 const ref = doc(db,"itens",id);
 const nome = user.displayName;
 
-if(likes.includes(nome)){
+if((likes || []).includes(nome)){
 await updateDoc(ref,{
 likes: arrayRemove(nome)
 });
@@ -235,7 +235,7 @@ likes: arrayUnion(nome)
 }
 }
 
-/* 🔁 QUERO TROCAR (CORRIGIDO) */
+/* 🔁 QUERO TROCAR (AGORA CHAT REAL) */
 window.trocar = async function(id){
 
 if(!user){
@@ -253,7 +253,7 @@ time: Date.now()
 })
 });
 
-alert("Interesse enviado!");
+alert("Mensagem enviada!");
 }
 
 /* FILTRO */
@@ -281,6 +281,7 @@ return okCidade && okCat;
 .forEach((i)=>{
 
 let likes = i.likes || [];
+let chat = i.chat || [];
 let isOwner = i.owner === user?.displayName;
 
 lista.innerHTML += `
@@ -306,19 +307,24 @@ ${i.imagem ? `<img src="${i.imagem}" style="width:100%;border-radius:10px;">` : 
 🔁 Quero trocar
 </button>
 
+<div style="margin-top:10px;background:#f4f4f4;padding:8px;border-radius:8px;">
+<strong>💬 Chat:</strong>
+${chat.map(c=>`
+<p>👤 ${c.user}: ${c.msg}</p>
+`).join("")}
+</div>
+
 </div>
 `;
 });
 }
 
-/* FIREBASE LISTENER */
-onSnapshot(collection(db,"itens"),(snapshot)=>{
-
+/* FIREBASE */
+onSnapshot(collection(db,"itens"),snap=>{
 dadosCache = [];
-snapshot.forEach(d=>{
+snap.forEach(d=>{
 dadosCache.push({id:d.id,...d.data()});
 });
-
 render(dadosCache);
 });
 </script>
