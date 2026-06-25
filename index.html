@@ -3,66 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eco Troca</title>
+<title>Eco Troca - Projeto Escolar</title>
 
 <style>
 body{
 font-family: Arial;
-background:#f2f2f2;
 margin:0;
+background:#f1f8f4;
+color:#222;
+}
+
+header{
+background:#2e7d32;
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+max-width:900px;
+margin:auto;
 padding:20px;
 }
 
-.item{
-background:#fff;
+.card{
+background:white;
 padding:15px;
 margin-bottom:15px;
 border-radius:10px;
+box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+input, textarea{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
 button{
-margin-top:5px;
-padding:8px;
+padding:10px;
 border:none;
 border-radius:6px;
 cursor:pointer;
+margin-top:5px;
 }
 
-.chat{
-background:#eee;
-margin-top:10px;
-padding:8px;
-border-radius:8px;
-font-size:14px;
+.btn{
+background:#2e7d32;
+color:white;
+}
+
+.btn-red{
+background:#c62828;
+color:white;
+}
+
+.btn-blue{
+background:#1565c0;
+color:white;
 }
 
 .small{
 font-size:12px;
-color:#555;
+color:#666;
+}
+
+.chat{
+background:#eee;
+padding:8px;
+margin-top:10px;
+border-radius:8px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>🌍 Eco Troca</h2>
+<header>
+<h1>🌍 Eco Troca</h1>
+<p>Projeto escolar de sustentabilidade e reutilização de materiais</p>
+</header>
 
-<div id="usuarioBox"></div>
+<div class="container">
 
-<hr>
+<!-- SOBRE -->
+<div class="card">
+<h2>♻️ Sobre o projeto</h2>
+<p>
+O Eco Troca é uma plataforma criada para incentivar a troca de materiais escolares entre alunos,
+reduzindo o desperdício e promovendo a sustentabilidade.
+</p>
+</div>
 
-<h3>Publicar item</h3>
+<!-- PUBLICAR -->
+<div class="card">
+<h2>📦 Publicar item</h2>
 
-<input id="nome" placeholder="Nome"><br><br>
-<input id="cidade" placeholder="Cidade"><br><br>
-<textarea id="descricao" placeholder="Descrição"></textarea><br><br>
-<input id="imagem" placeholder="URL da imagem"><br><br>
+<input id="nome" placeholder="Nome do item">
+<input id="cidade" placeholder="Cidade">
+<textarea id="descricao" placeholder="Descrição"></textarea>
+<input id="imagem" placeholder="URL da imagem">
 
-<button onclick="publicar()">Publicar</button>
+<button class="btn" onclick="publicar()">Publicar</button>
+</div>
 
-<hr>
-
+<!-- LISTA -->
 <div id="listaItens"></div>
+
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
@@ -91,28 +141,19 @@ appId: "1:813565372:web:470f850a6f11fda93b97b9"
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* USER */
+/* usuário simples */
 let user = JSON.parse(localStorage.getItem("usuarioLogado") || "null");
-
-function setUserBox(){
-const box = document.getElementById("usuarioBox");
-if(box){
-box.innerText = user ? "👤 " + user.nome : "Não logado";
-}
+if(!user){
+user = { nome: "Aluno" };
 }
 
 /* PUBLICAR */
 window.publicar = async function(){
 
-if(!user){
-alert("Faça login primeiro!");
-return;
-}
-
-let nome = document.getElementById("nome")?.value;
-let cidade = document.getElementById("cidade")?.value;
-let descricao = document.getElementById("descricao")?.value;
-let imagem = document.getElementById("imagem")?.value || "";
+let nome = document.getElementById("nome").value;
+let cidade = document.getElementById("cidade").value;
+let descricao = document.getElementById("descricao").value;
+let imagem = document.getElementById("imagem").value || "";
 
 if(!nome || !cidade){
 alert("Preencha os campos!");
@@ -125,34 +166,25 @@ cidade,
 descricao,
 imagem,
 owner: user.nome,
-chat: [],
-likes: []
+likes: [],
+chat: []
 });
 
-alert("Publicado 🌍");
-}
-
-/* EXCLUIR */
-window.excluir = async function(id){
-await deleteDoc(doc(db, "itens", id));
+alert("Item publicado!");
 }
 
 /* CURTIR */
-window.like = async function(id, likes, nomeUser){
+window.like = async function(id, likes){
 
-nomeUser = nomeUser || "";
+let ref = doc(db, "itens", id);
 
-const ref = doc(db, "itens", id);
-
-likes = likes || [];
-
-if(likes.includes(nomeUser)){
-await updateDoc(ref, {
-likes: arrayRemove(nomeUser)
+if(likes.includes(user.nome)){
+await updateDoc(ref,{
+likes: arrayRemove(user.nome)
 });
 }else{
-await updateDoc(ref, {
-likes: arrayUnion(nomeUser)
+await updateDoc(ref,{
+likes: arrayUnion(user.nome)
 });
 }
 }
@@ -160,62 +192,57 @@ likes: arrayUnion(nomeUser)
 /* CHAT */
 window.chat = async function(id){
 
-let msg = prompt("Mensagem:");
+let msg = prompt("Digite sua mensagem:");
 if(!msg) return;
 
-const ref = doc(db, "itens", id);
+let ref = doc(db, "itens", id);
 
-await updateDoc(ref, {
-chat: arrayUnion(user?.nome + ": " + msg)
+await updateDoc(ref,{
+chat: arrayUnion(user.nome + ": " + msg)
 });
 }
 
-/* RENDER (CORRIGIDO - SEM DUPLICAR LISTENER) */
-function render(){
+/* EXCLUIR */
+window.excluir = async function(id){
+await deleteDoc(doc(db,"itens",id));
+}
 
+/* LISTA */
 const lista = document.getElementById("listaItens");
-if(!lista) return;
 
-onSnapshot(collection(db, "itens"), (snapshot) => {
+onSnapshot(collection(db,"itens"), (snapshot)=>{
 
 lista.innerHTML = "";
 
-snapshot.forEach((d) => {
+snapshot.forEach((d)=>{
 
 let i = d.data();
-
-let isOwner = user && i.owner === user.nome;
-
 let likes = i.likes || [];
 let chat = i.chat || [];
+let isOwner = i.owner === user.nome;
 
 lista.innerHTML += `
-<div class="item">
+<div class="card">
 
-<h3>${i.nome || ""}</h3>
+<h3>${i.nome}</h3>
+<p>📍 ${i.cidade}</p>
+<p>${i.descricao}</p>
+<p class="small">por ${i.owner}</p>
 
-${i.imagem ? `
-<img src="${i.imagem}" style="width:100%;border-radius:10px;margin-top:8px;">
-` : ""}
+${i.imagem ? `<img src="${i.imagem}" style="width:100%;border-radius:10px;">` : ""}
 
-<p>${i.cidade || ""}</p>
-<p>${i.descricao || ""}</p>
-<p class="small">Por: ${i.owner || ""}</p>
-
-<button onclick="like('${d.id}', ${JSON.stringify(likes)}, '${user?.nome || ""}')">
+<button class="btn-blue" onclick="like('${d.id}', ${JSON.stringify(likes)})">
 ❤️ Curtir (${likes.length})
 </button>
 
-<button onclick="chat('${d.id}')">💬 Chat</button>
+<button class="btn-blue" onclick="chat('${d.id}')">💬 Chat</button>
 
 ${isOwner ? `
-<button onclick="excluir('${d.id}')" style="background:#d32f2f;color:white;">
-🗑 Excluir
-</button>
+<button class="btn-red" onclick="excluir('${d.id}')">🗑 Excluir</button>
 ` : ""}
 
 <div class="chat">
-${chat.map(c => `<div>${c}</div>`).join("")}
+${chat.map(c=>`<div>${c}</div>`).join("")}
 </div>
 
 </div>
@@ -223,15 +250,6 @@ ${chat.map(c => `<div>${c}</div>`).join("")}
 });
 
 });
-
-}
-
-/* START */
-window.onload = () => {
-setUserBox();
-render();
-};
-
 </script>
 
 </body>
