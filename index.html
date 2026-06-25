@@ -266,17 +266,6 @@ Quero Trocar
 <button onclick="publicarItem()">
 Publicar
 </button>
-function publicarItem(){
-
-let usuario =
-JSON.parse(localStorage.getItem("usuarioLogado"));
-
-if(!usuario){
-alert("Faça login para publicar um item.");
-window.location.href="login.html";
-return;
-}
-</button>
 
 </section>
 
@@ -395,6 +384,27 @@ document.getElementById("usuario")
 
 }
 </script>
+function publicarItem(){
 
+let usuario =
+JSON.parse(localStorage.getItem("usuarioLogado"));
+
+if(!usuario){
+alert("Faça login para publicar um item.");
+window.location.href="login.html";
+return;
+}
+
+let nome =
+document.getElementById("nome").value;
+
+let cidade =
+document.getElementById("cidade").value;
+
+let descricao =
+document.getElementById("descricao").value;
+
+// resto da função...
+}
 </body>
 </html>
