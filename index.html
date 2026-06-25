@@ -101,7 +101,6 @@ border-radius:50%;
 
 <textarea id="descricao" placeholder="Descrição"></textarea>
 
-<!-- 📸 CÂMERA / GALERIA -->
 <input id="imagem" type="file" accept="image/*" capture="environment">
 
 <button class="btn" onclick="publicar()">Publicar</button>
@@ -134,7 +133,6 @@ getFirestore,
 collection,
 addDoc,
 onSnapshot,
-deleteDoc,
 doc,
 updateDoc,
 arrayUnion,
@@ -167,16 +165,12 @@ let user = null;
 let dadosCache = [];
 let imagemBase64 = "";
 
-/* 📸 CAPTURA IMAGEM */
+/* 📸 IMAGEM */
 document.getElementById("imagem").addEventListener("change", function(e){
-  const file = e.target.files[0];
-
-  const reader = new FileReader();
-  reader.onload = function(event){
-    imagemBase64 = event.target.result;
-  };
-
-  reader.readAsDataURL(file);
+const file = e.target.files[0];
+const reader = new FileReader();
+reader.onload = e => imagemBase64 = e.target.result;
+reader.readAsDataURL(file);
 });
 
 /* LOGIN */
@@ -192,7 +186,6 @@ await signOut(auth);
 /* USER */
 onAuthStateChanged(auth,(u)=>{
 user = u;
-
 document.getElementById("userInfo").innerHTML =
 user ? `👤 ${user.displayName}` : "Não logado";
 });
@@ -220,21 +213,47 @@ chat: []
 alert("Publicado!");
 }
 
-/* CURTIR */
+/* ❤️ CURTIR (CORRIGIDO) */
 window.like = async function(id, likes){
 
-let ref = doc(db,"itens",id);
+if(!user){
+alert("Faça login primeiro!");
+return;
+}
 
-if(likes.includes(user.displayName)){
-await updateDoc(ref,{likes: arrayRemove(user.displayName)});
+const ref = doc(db,"itens",id);
+const nome = user.displayName;
+
+if(likes.includes(nome)){
+await updateDoc(ref,{
+likes: arrayRemove(nome)
+});
 }else{
-await updateDoc(ref,{likes: arrayUnion(user.displayName)});
+await updateDoc(ref,{
+likes: arrayUnion(nome)
+});
 }
 }
 
-/* TROCA */
-window.trocar = function(nome){
-alert("Você demonstrou interesse em trocar com: " + nome);
+/* 🔁 QUERO TROCAR (CORRIGIDO) */
+window.trocar = async function(id){
+
+if(!user){
+alert("Faça login primeiro!");
+return;
+}
+
+const ref = doc(db,"itens",id);
+
+await updateDoc(ref,{
+chat: arrayUnion({
+user: user.displayName,
+msg: "Tenho interesse em trocar",
+time: Date.now()
+})
+});
+
+alert("Interesse enviado!");
 }
 
 /* FILTRO */
@@ -259,7 +278,7 @@ let okCidade = i.cidade.toLowerCase().includes(cidadeF);
 let okCat = catF ? i.categoria === catF : true;
 return okCidade && okCat;
 })
-.forEach((i,d)=>{
+.forEach((i)=>{
 
 let likes = i.likes || [];
 let isOwner = i.owner === user?.displayName;
@@ -283,11 +302,9 @@ ${i.imagem ? `<img src="${i.imagem}" style="width:100%;border-radius:10px;">` : 
 ❤️ Curtir (${likes.length})
 </button>
 
-<button class="btn-yellow" onclick="trocar('${i.owner}')">
+<button class="btn-yellow" onclick="trocar('${i.id}')">
 🔁 Quero trocar
 </button>
-
-${isOwner ? `<button class="btn-red" onclick="excluir('${i.id}')">🗑 Excluir</button>` : ""}
 
 </div>
 `;
@@ -298,7 +315,6 @@ ${isOwner ? `<button class="btn-red" onclick="excluir('${i.id}')">🗑 Excluir</
 onSnapshot(collection(db,"itens"),(snapshot)=>{
 
 dadosCache = [];
-
 snapshot.forEach(d=>{
 dadosCache.push({id:d.id,...d.data()});
 });
