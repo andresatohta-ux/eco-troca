@@ -1,171 +1,89 @@
-<script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
-import {
-getFirestore,collection,addDoc,onSnapshot,doc,updateDoc,arrayUnion,arrayRemove
-} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+/* 🔁 PEDIR TROCA (CORRIGIDO + CHAT INICIAL) */
+window.trocar = async (id) => {
+if (!user) return;
 
-import {
-getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut
-} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+const ref = doc(db, "itens", id);
 
-const firebaseConfig = {
-apiKey:"AIzaSyBQtiPkVwkTYNmbGXKD96FIOITKQ8oI62A",
-authDomain:"eco-troca-fecb3.firebaseapp.com",
-projectId:"eco-troca-fecb3",
-storageBucket:"eco-troca-fecb3.firebasestorage.app",
-messagingSenderId:"813565372",
-appId:"1:813565372:web:470f850a6f11fda93b97b9"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-let user=null;
-let dadosCache=[];
-let imagemBase64="";
-
-/* 📸 IMAGEM */
-document.getElementById("imagem").addEventListener("change",e=>{
-const file=e.target.files[0];
-const reader=new FileReader();
-reader.onload=ev=>imagemBase64=ev.target.result;
-reader.readAsDataURL(file);
-});
-
-/* 🔐 LOGIN */
-window.loginGoogle=()=>signInWithPopup(auth,new GoogleAuthProvider());
-window.logout=()=>signOut(auth);
-
-onAuthStateChanged(auth,u=>{
-user=u;
-document.getElementById("userInfo").innerText =
-user?user.displayName:"Não logado";
-});
-
-/* 📦 PUBLICAR */
-window.publicar=async()=>{
-if(!user)return alert("Faça login!");
-
-await addDoc(collection(db,"itens"),{
-nome:nome.value,
-cidade:cidade.value,
-categoria:categoria.value,
-descricao:descricao.value,
-imagem:imagemBase64||"",
-owner:user.displayName,
-uid:user.uid,
-likes:[],
-chat:[],
-status:"livre",
-interessado:null
-});
-
-alert("Publicado!");
-};
-
-/* ❤️ LIKE (TOGGLE CORRIGIDO) */
-window.like=async(id,likes)=>{
-if(!user)return;
-
-const ref=doc(db,"itens",id);
-const nomeUser=user.displayName;
-
-if((likes||[]).includes(nomeUser)){
-await updateDoc(ref,{
-likes:arrayRemove(nomeUser)
-});
-}else{
-await updateDoc(ref,{
-likes:arrayUnion(nomeUser)
-});
-}
-};
-
-/* 🔁 PEDIR TROCA */
-window.trocar=async(id)=>{
-if(!user)return;
-
-await updateDoc(doc(db,"itens",id),{
-status:"negociacao",
-interessado:{
-uid:user.uid,
-nome:user.displayName
-}
+await updateDoc(ref, {
+status: "negociacao",
+interessado: {
+uid: user.uid,
+nome: user.displayName
+},
+chat: arrayUnion({
+user: user.displayName,
+msg: "Tenho interesse na troca",
+time: Date.now()
+})
 });
 };
 
 /* 🟢 ACEITAR */
-window.aceitar=async(id)=>{
-await updateDoc(doc(db,"itens",id),{
-status:"aceito"
+window.aceitar = async (id) => {
+if (!user) return;
+
+await updateDoc(doc(db, "itens", id), {
+status: "aceito"
 });
 };
 
 /* 🔴 RECUSAR */
-window.recusar=async(id)=>{
-await updateDoc(doc(db,"itens",id),{
-status:"livre",
-interessado:null
+window.recusar = async (id) => {
+if (!user) return;
+
+await updateDoc(doc(db, "itens", id), {
+status: "livre",
+interessado: null
 });
 };
 
-/* 💬 ENVIAR MENSAGEM (CHAT GLOBAL) */
-window.enviarMsg=async(id)=>{
-const input=document.getElementById("msg-"+id);
-const msg=input.value;
-if(!msg)return;
+/* 💬 CHAT */
+window.enviarMsg = async (id) => {
+if (!user) return;
 
-await updateDoc(doc(db,"itens",id),{
-chat:arrayUnion({
-user:user.displayName,
+const input = document.getElementById("msg-" + id);
+const msg = input.value.trim();
+if (!msg) return;
+
+await updateDoc(doc(db, "itens", id), {
+chat: arrayUnion({
+user: user.displayName,
 msg,
-time:Date.now()
+time: Date.now()
 })
 });
 
-input.value="";
+input.value = "";
 };
 
-/* 🔎 FILTRO */
-window.aplicarFiltro=()=>{
-render(
-dadosCache,
-filtroCidade.value.toLowerCase(),
-filtroCategoria.value
-);
-};
+/* 🧱 RENDER (PROTEGIDO) */
+function render(data, cidadeF = "", catF = "") {
 
-/* 🧱 RENDER CORRIGIDO */
-const lista=document.getElementById("listaItens");
-
-function render(data,cidadeF="",catF=""){
-
-lista.innerHTML="";
+lista.innerHTML = "";
 
 data
-.filter(i=>{
-return i.cidade.toLowerCase().includes(cidadeF)
-&& (!catF || i.categoria===catF);
+.filter(i => {
+const cidade = (i.cidade || "").toLowerCase();
+return cidade.includes(cidadeF) && (!catF || i.categoria === catF);
 })
-.forEach(i=>{
+.forEach(i => {
 
-const likes=i.likes||[];
-const chat=i.chat||[];
+const likes = i.likes || [];
+const chat = i.chat || [];
 
-lista.innerHTML+=`
+lista.innerHTML += `
 <div class="card">
 
 <h3>${i.nome}</h3>
-<p>${i.cidade} | ${i.categoria}</p>
-<p>${i.descricao}</p>
+<p>${i.cidade || ""} | ${i.categoria || ""}</p>
+<p>${i.descricao || ""}</p>
 
-${i.imagem?`<img src="${i.imagem}" style="width:100%;border-radius:10px">`:""}
+${i.imagem ? `<img src="${i.imagem}" style="width:100%;border-radius:10px">` : ""}
 
-${i.status==="negociacao"?'<div class="badge">🟡 Em negociação</div>':""}
-${i.status==="aceito"?'<div class="badge" style="background:green">🟢 Aceito</div>':""}
+${i.status === "negociacao" ? '<div class="badge">🟡 Em negociação</div>' : ""}
+${i.status === "aceito" ? '<div class="badge" style="background:green">🟢 Aceito</div>' : ""}
 
-<button class="btn-blue" onclick="like('${i.id}',${JSON.stringify(likes)})">
+<button class="btn-blue" onclick="like('${i.id}', ${JSON.stringify(likes)})">
 ❤️ ${likes.length}
 </button>
 
@@ -173,16 +91,16 @@ ${i.status==="aceito"?'<div class="badge" style="background:green">🟢 Aceito</
 🔁 Trocar
 </button>
 
-${i.interessado && i.owner===user?.displayName?`
+${i.interessado && i.owner === user?.displayName ? `
 <button class="btn-blue" onclick="aceitar('${i.id}')">✔ Aceitar</button>
 <button class="btn-red" onclick="recusar('${i.id}')">✖ Recusar</button>
-`: ""}
+` : ""}
 
 <div style="margin-top:10px">
 <strong>💬 Chat</strong>
 
 <div>
-${chat.map(m=>`<p>👤 ${m.user}: ${m.msg}</p>`).join("")}
+${chat.map(m => `<p>👤 ${m.user}: ${m.msg}</p>`).join("")}
 </div>
 
 <input id="msg-${i.id}" placeholder="Mensagem...">
@@ -193,11 +111,3 @@ ${chat.map(m=>`<p>👤 ${m.user}: ${m.msg}</p>`).join("")}
 `;
 });
 }
-
-/* 🔄 LIVE UPDATE */
-onSnapshot(collection(db,"itens"),snap=>{
-dadosCache=[];
-snap.forEach(d=>dadosCache.push({id:d.id,...d.data()}));
-render(dadosCache);
-});
-</script>
