@@ -1,13 +1,39 @@
-<script>
-let user = JSON.parse(localStorage.getItem("usuarioLogado"));
-let itens = JSON.parse(localStorage.getItem("itens")) || [];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {
+getFirestore,
+collection,
+addDoc,
+onSnapshot,
+deleteDoc,
+doc,
+updateDoc,
+arrayUnion,
+arrayRemove
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-/* USER */
+/* 🔥 FIREBASE CONFIG (SEU PROJETO) */
+const firebaseConfig = {
+  apiKey: "AIzaSyBQtiPkVwkTYNmbGXKD96FIOITKQ8oI62A",
+  authDomain: "eco-troca-fecb3.firebaseapp.com",
+  projectId: "eco-troca-fecb3",
+  storageBucket: "eco-troca-fecb3.firebasestorage.app",
+  messagingSenderId: "813565372",
+  appId: "1:813565372:web:470f850a6f11fda93b97b9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* USER LOCAL */
+let user = JSON.parse(localStorage.getItem("usuarioLogado"));
+
 document.getElementById("usuarioBox").innerText =
 user ? "👤 " + user.nome : "Não logado";
 
-/* PUBLICAR */
-function publicar(){
+/* PUBLICAR NA NUVEM */
+window.publicar = async function(){
+
 if(!user){
 alert("Faça login primeiro!");
 return;
@@ -22,12 +48,9 @@ alert("Preencha os campos!");
 return;
 }
 
-let imagem = document.getElementById("imagem") 
-? document.getElementById("imagem").value 
-: "";
+let imagem = document.getElementById("imagem")?.value || "";
 
-itens.push({
-id: Date.now(),
+await addDoc(collection(db, "itens"), {
 nome,
 cidade,
 descricao,
@@ -37,75 +60,62 @@ chat: [],
 likes: []
 });
 
-localStorage.setItem("itens", JSON.stringify(itens));
-
-document.getElementById("nome").value="";
-document.getElementById("cidade").value="";
-document.getElementById("descricao").value="";
-
-if(document.getElementById("imagem")){
-document.getElementById("imagem").value="";
-}
-
-alert("Item publicado com sucesso 🌱");
-
-render();
-}
-
-/* LIKE */
-function like(id){
-let item = itens.find(i => i.id === id);
-
-if(!item.likes){
-item.likes = [];
-}
-
-if(!item.likes.includes(user.nome)){
-item.likes.push(user.nome);
-}else{
-item.likes = item.likes.filter(u => u !== user.nome);
-}
-
-localStorage.setItem("itens", JSON.stringify(itens));
-render();
-}
-
-/* CHAT */
-function chat(id){
-let msg = prompt("Mensagem:");
-if(!msg) return;
-
-let item = itens.find(i => i.id === id);
-item.chat.push(user.nome + ": " + msg);
-
-localStorage.setItem("itens", JSON.stringify(itens));
-render();
+alert("Publicado na nuvem 🌍");
 }
 
 /* EXCLUIR */
-function excluir(id){
-if(!confirm("Tem certeza que deseja excluir esta publicação?")) return;
-
-itens = itens.filter(i => i.id !== id);
-
-localStorage.setItem("itens", JSON.stringify(itens));
-render();
+window.excluir = async function(id){
+await deleteDoc(doc(db, "itens", id));
 }
 
-/* RENDER */
-function render(){
-let filtro = document.getElementById("filtro").value.toLowerCase();
-let lista = document.getElementById("listaItens");
+/* CURTIR */
+window.like = async function(id, likes, nomeUser){
+
+const ref = doc(db, "itens", id);
+
+if(likes.includes(nomeUser)){
+await updateDoc(ref, {
+likes: arrayRemove(nomeUser)
+});
+}else{
+await updateDoc(ref, {
+likes: arrayUnion(nomeUser)
+});
+}
+}
+
+/* CHAT SIMPLES */
+window.chat = async function(id){
+
+let msg = prompt("Mensagem:");
+if(!msg) return;
+
+const ref = doc(db, "itens", id);
+
+await updateDoc(ref, {
+chat: arrayUnion(user.nome + ": " + msg)
+});
+
+}
+
+/* RENDER EM TEMPO REAL */
+window.render = function(){
+
+const lista = document.getElementById("listaItens");
+
+onSnapshot(collection(db, "itens"), (snapshot) => {
+
 lista.innerHTML = "";
 
-itens
-.filter(i => i.cidade.toLowerCase().includes(filtro))
-.forEach(i => {
+snapshot.forEach((d) => {
+
+let i = d.data();
 
 let isOwner = user && i.owner === user.nome;
 
 lista.innerHTML += `
 <div class="item">
+
 <h3>${i.nome}</h3>
 
 ${i.imagem ? `
@@ -117,24 +127,28 @@ style="width:100%;border-radius:10px;margin-top:8px;">
 <p>${i.descricao}</p>
 <p class="small">Por: ${i.owner}</p>
 
-<button onclick="like(${i.id})">
+<button onclick="like('${d.id}', ${JSON.stringify(i.likes)}, '${user?.nome || ""}')">
 ❤️ Curtir (${i.likes ? i.likes.length : 0})
 </button>
 
-<button onclick="chat(${i.id})">💬 Chat</button>
+<button onclick="chat('${d.id}')">💬 Chat</button>
 
 ${isOwner ? `
-<button onclick="excluir(${i.id})" style="background:#d32f2f;">
+<button onclick="excluir('${d.id}')" style="background:#d32f2f;">
 🗑 Excluir
 </button>
 ` : ""}
 
 <div class="chat">
-${i.chat.map(c => `<div>${c}</div>`).join("")}
+${i.chat ? i.chat.map(c => `<div>${c}</div>`).join("") : ""}
 </div>
+
 </div>
 `;
 });
+
+});
+
 }
 
 render();
