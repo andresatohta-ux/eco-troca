@@ -153,8 +153,9 @@ margin-top:50px;
 <a href="#">Sobre</a>
 </nav>
 
-</header>
+<div id="usuario"></div>
 
+</header>
 <section class="hero">
 
 <h1>Troque hoje, transforme o amanhã!</h1>
@@ -289,7 +290,18 @@ lista.innerHTML += `
 }
 
 mostrarItens();
+let usuario =
+JSON.parse(
+localStorage.getItem("usuarioLogado")
+);
 
+if(usuario){
+
+document.getElementById("usuario")
+.innerHTML =
+`Olá, ${usuario.nome}`;
+
+}
 </script>
 
 </body>
