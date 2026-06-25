@@ -6,7 +6,6 @@
 <title>Eco Troca</title>
 
 <style>
-/* 🌑 FUNDO DARK MODERNO */
 body{
 margin:0;
 font-family:'Segoe UI', Arial;
@@ -14,170 +13,123 @@ background: radial-gradient(circle at top,#0f172a,#050816,#000);
 color:#e5e7eb;
 }
 
-/* 🌍 HEADER NEON */
+/* HEADER */
 header{
 position:sticky;
 top:0;
 z-index:10;
-padding:18px;
+padding:16px;
 text-align:center;
-background: rgba(0,0,0,0.7);
-backdrop-filter: blur(10px);
-border-bottom:1px solid rgba(34,211,238,0.3);
-box-shadow:0 0 20px rgba(34,211,238,0.15);
+background:rgba(0,0,0,0.7);
+backdrop-filter:blur(10px);
+border-bottom:1px solid rgba(34,211,238,0.2);
 }
 
 header h1{
 margin:0;
-font-size:22px;
+font-size:20px;
 color:#22d3ee;
-text-shadow:0 0 10px rgba(34,211,238,0.6);
 }
 
-header p{
-margin:5px 0 0;
-font-size:12px;
-opacity:0.7;
-}
-
-/* 📦 CONTAINER */
-.container{
+/* TABS */
+.tab{
+display:none;
+padding:15px;
 max-width:900px;
 margin:auto;
-padding:15px;
 }
 
-/* 🧩 CARD DARK GLASS */
+.tab.active{
+display:block;
+}
+
+/* CARD */
 .card{
-background: rgba(15,23,42,0.75);
-backdrop-filter: blur(10px);
+background:rgba(15,23,42,0.75);
 border:1px solid rgba(34,211,238,0.15);
-padding:16px;
-margin:14px 0;
-border-radius:16px;
-box-shadow:0 0 20px rgba(0,0,0,0.4);
-transition:0.25s;
+padding:14px;
+margin:12px 0;
+border-radius:14px;
 }
 
-.card:hover{
-transform:translateY(-4px);
-border:1px solid rgba(34,211,238,0.4);
-box-shadow:0 0 25px rgba(34,211,238,0.15);
-}
-
-/* ✏️ INPUTS NEON */
+/* INPUT */
 input,select,textarea{
 width:100%;
 padding:12px;
 margin-top:8px;
-border-radius:12px;
-border:1px solid rgba(34,211,238,0.2);
+border-radius:10px;
+border:1px solid #1f2937;
 background:#0b1220;
-color:#e5e7eb;
+color:white;
 outline:none;
-transition:0.2s;
 }
 
-input:focus,textarea:focus,select:focus{
-border:1px solid #22d3ee;
-box-shadow:0 0 10px rgba(34,211,238,0.3);
-}
-
-/* 🔘 BOTÕES NEON */
+/* BOTÕES */
 button{
-padding:10px 14px;
+padding:10px 12px;
 border:none;
-border-radius:12px;
+border-radius:10px;
 cursor:pointer;
 font-weight:600;
-transition:0.2s;
 }
 
-button:hover{
-transform:scale(1.05);
-}
+.btn{background:#22c55e;color:black}
+.btn-blue{background:#3b82f6;color:white}
+.btn-red{background:#ef4444;color:white}
+.btn-yellow{background:#facc15;color:black}
 
-.btn{
-background:linear-gradient(135deg,#22c55e,#16a34a);
-color:white;
-box-shadow:0 0 10px rgba(34,197,94,0.3);
-}
-
-.btn-blue{
-background:linear-gradient(135deg,#0ea5e9,#3b82f6);
-color:white;
-box-shadow:0 0 10px rgba(59,130,246,0.3);
-}
-
-.btn-red{
-background:linear-gradient(135deg,#ef4444,#dc2626);
-color:white;
-box-shadow:0 0 10px rgba(239,68,68,0.3);
-}
-
-.btn-yellow{
-background:linear-gradient(135deg,#facc15,#eab308);
-color:black;
-box-shadow:0 0 10px rgba(250,204,21,0.2);
-}
-
-/* 🟡 BADGE */
-.badge{
-display:inline-block;
-padding:6px 12px;
-border-radius:999px;
-font-size:12px;
-margin-top:8px;
-background:rgba(250,204,21,0.15);
-color:#facc15;
-border:1px solid rgba(250,204,21,0.4);
-}
-
-/* 🖼️ IMAGEM */
-img{
-width:100%;
-border-radius:14px;
-margin-top:10px;
-border:1px solid rgba(34,211,238,0.15);
-}
-
-/* 💬 CHAT */
+/* CHAT */
 .chat{
 background:#0b1220;
 padding:10px;
-border-radius:12px;
+border-radius:10px;
 margin-top:10px;
 max-height:160px;
 overflow:auto;
 font-size:13px;
-border:1px solid rgba(34,211,238,0.1);
+border:1px solid #1f2937;
 }
 
-/* 👤 USER */
-#userInfo{
-margin:10px 0;
-font-weight:600;
-color:#22d3ee;
-text-shadow:0 0 5px rgba(34,211,238,0.4);
+/* BADGE */
+.badge{
+display:inline-block;
+padding:5px 10px;
+border-radius:999px;
+background:#facc15;
+color:black;
+font-size:12px;
+margin-top:6px;
 }
 
-/* 🔥 AÇÕES */
-.actions{
-display:flex;
-gap:10px;
-flex-wrap:wrap;
+/* IMAGEM */
+img{
+width:100%;
+border-radius:12px;
 margin-top:10px;
 }
 
-/* 📱 MOBILE */
-@media(max-width:600px){
-.card{
-padding:14px;
+/* NAV BAR */
+.nav{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+display:flex;
+justify-content:space-around;
+background:#0f172a;
+border-top:1px solid #1f2937;
+padding:10px;
 }
 
-button{
-width:100%;
+.nav button{
+background:none;
+color:white;
+font-size:14px;
 }
+
+/* MOBILE */
+@media(max-width:600px){
+button{width:100%}
 }
 </style>
 </head>
@@ -186,22 +138,17 @@ width:100%;
 
 <header>
 <h1>🌍 Eco Troca</h1>
-<p>Trocas sustentáveis entre alunos</p>
 </header>
 
-<div class="container">
-
-<!-- LOGIN -->
-<div class="card">
-<h2>👤 Usuário</h2>
-<div id="userInfo">Não logado</div>
-<button class="btn" onclick="loginGoogle()">Entrar com Google</button>
-<button class="btn-red" onclick="logout()">Sair</button>
+<!-- FEED -->
+<div id="feed" class="tab active">
+<div id="listaItens"></div>
 </div>
 
-<!-- PUBLICAR -->
+<!-- POSTAR -->
+<div id="postar" class="tab">
 <div class="card">
-<h2>📦 Publicar item</h2>
+<h3>📦 Publicar item</h3>
 
 <input id="nome" placeholder="Nome">
 <input id="cidade" placeholder="Cidade">
@@ -215,14 +162,28 @@ width:100%;
 
 <textarea id="descricao" placeholder="Descrição"></textarea>
 
-<input id="imagem" type="file" accept="image/*" capture="environment">
+<input id="imagem" type="file">
 
 <button class="btn" onclick="publicar()">Publicar</button>
 </div>
+</div>
 
-<!-- LISTA -->
-<div id="listaItens"></div>
+<!-- PERFIL -->
+<div id="perfil" class="tab">
+<div class="card">
+<h3>👤 Usuário</h3>
+<div id="userInfo">Não logado</div>
 
+<button class="btn-blue" onclick="loginGoogle()">Login</button>
+<button class="btn-red" onclick="logout()">Sair</button>
+</div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+<button onclick="showTab('feed')">🏠 Feed</button>
+<button onclick="showTab('postar')">➕ Postar</button>
+<button onclick="showTab('perfil')">👤 Perfil</button>
 </div>
 
 <script type="module">
@@ -253,8 +214,14 @@ let user=null;
 let imagemBase64="";
 const lista=document.getElementById("listaItens");
 
-/* IMAGEM */
-document.getElementById("imagem").addEventListener("change",e=>{
+/* NAV */
+window.showTab=(tab)=>{
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+document.getElementById(tab).classList.add("active");
+};
+
+/* IMAGE */
+document.getElementById("imagem")?.addEventListener("change",e=>{
 const file=e.target.files[0];
 const reader=new FileReader();
 reader.onload=ev=>imagemBase64=ev.target.result;
@@ -267,13 +234,13 @@ window.logout=()=>signOut(auth);
 
 onAuthStateChanged(auth,u=>{
 user=u;
-document.getElementById("userInfo").innerText =
+document.getElementById("userInfo").innerText=
 user?user.displayName:"Não logado";
 });
 
 /* PUBLICAR */
 window.publicar=async()=>{
-if(!user)return alert("Faça login!");
+if(!user)return alert("login!");
 
 await addDoc(collection(db,"itens"),{
 nome:nome.value,
@@ -291,8 +258,6 @@ status:"livre"
 
 /* LIKE */
 window.like=async(id,likes)=>{
-if(!user)return;
-
 const ref=doc(db,"itens",id);
 
 if(likes.includes(user.uid)){
@@ -304,8 +269,6 @@ await updateDoc(ref,{likes:arrayUnion(user.uid)});
 
 /* TROCA */
 window.trocar=async(id)=>{
-if(!user)return;
-
 await updateDoc(doc(db,"itens",id),{
 status:"negociacao",
 chat:arrayUnion({
@@ -317,13 +280,10 @@ time:Date.now()
 });
 };
 
-/* MENSAGEM */
+/* MSG */
 window.enviarMsg=async(id)=>{
-if(!user)return;
-
 const input=document.getElementById("msg-"+id);
 const msg=(input?.value||"").trim();
-if(!msg)return;
 
 await updateDoc(doc(db,"itens",id),{
 chat:arrayUnion({
@@ -339,7 +299,6 @@ input.value="";
 
 /* RENDER */
 function render(data){
-
 lista.innerHTML="";
 
 data.forEach(i=>{
@@ -358,8 +317,6 @@ ${i.status==="negociacao"?'<div class="badge">🟡 Em negociação</div>':""}
 
 ${i.imagem?`<img src="${i.imagem}">`:""}
 
-<div class="actions">
-
 <button class="btn-blue" onclick="like('${i.id}',${JSON.stringify(likes)})">
 ❤️ ${likes.length}
 </button>
@@ -368,17 +325,13 @@ ${i.imagem?`<img src="${i.imagem}">`:""}
 🔁 Trocar
 </button>
 
-</div>
-
 <div style="margin-top:10px">
 
 <input id="msg-${i.id}" placeholder="Mensagem...">
 <button class="btn-blue" onclick="enviarMsg('${i.id}')">Enviar</button>
 
 <div class="chat">
-${chat.map(m=>`
-<p><b>${m.user}</b>: ${m.msg}</p>
-`).join("")}
+${chat.map(m=>`<p><b>${m.user}</b>: ${m.msg}</p>`).join("")}
 </div>
 
 </div>
@@ -388,7 +341,7 @@ ${chat.map(m=>`
 });
 }
 
-/* FIRESTORE REALTIME */
+/* FIRESTORE */
 onSnapshot(collection(db,"itens"),snap=>{
 const data=[];
 snap.forEach(d=>data.push({id:d.id,...d.data()}));
