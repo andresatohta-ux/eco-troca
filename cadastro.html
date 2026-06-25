@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cadastro</title>
+</head>
+
+<body>
+
+<h2>Criar Conta</h2>
+
+<input id="nome" placeholder="Nome">
+
+<input id="cidade" placeholder="Cidade">
+
+<input id="email" placeholder="Email">
+
+<input
+id="senha"
+type="password"
+placeholder="Senha">
+
+<button onclick="cadastrar()">
+Cadastrar
+</button>
+
+<script>
+
+function cadastrar(){
+
+let usuario = {
+
+nome:
+document.getElementById("nome").value,
+
+cidade:
+document.getElementById("cidade").value,
+
+email:
+document.getElementById("email").value,
+
+senha:
+document.getElementById("senha").value,
+
+pontos:0,
+
+trocas:0
+
+};
+
+localStorage.setItem(
+usuario.email,
+JSON.stringify(usuario)
+);
+
+alert("Conta criada!");
+
+location.href="login.html";
+
+}
+
+</script>
+
+</body>
+</html>
