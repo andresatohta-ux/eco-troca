@@ -1,128 +1,240 @@
-/* =========================
-   🔁 PEDIR TROCA + CHAT INICIAL
-========================= */
-window.trocar = async (id) => {
-  if (!user) return;
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eco Troca</title>
 
-  await updateDoc(doc(db, "itens", id), {
-    status: "negociacao",
-    interessado: {
-      uid: user.uid,
-      nome: user.displayName
-    },
-    chat: arrayUnion({
-      user: user.displayName,
-      msg: "Tenho interesse na troca",
-      time: Date.now()
-    })
-  });
+<style>
+body{font-family:Arial;margin:0;background:#eef7ee}
+header{background:#2e7d32;color:#fff;padding:20px;text-align:center}
+.container{max-width:900px;margin:auto;padding:20px}
+.card{background:#fff;padding:15px;margin-bottom:15px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+input,select,textarea{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:1px solid #ccc}
+button{padding:10px;border:none;border-radius:6px;cursor:pointer;margin-top:5px}
+.btn{background:#2e7d32;color:#fff}
+.btn-blue{background:#1565c0;color:#fff}
+.btn-red{background:#c62828;color:#fff}
+.btn-yellow{background:#f9a825;color:#000}
+.badge{padding:4px 8px;background:orange;color:white;border-radius:6px;font-size:12px}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>🌍 Eco Troca</h1>
+<p>Feira de Ciências</p>
+</header>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div class="card">
+<h2>👤 Usuário</h2>
+<div id="userInfo">Não logado</div>
+<button class="btn" onclick="loginGoogle()">Entrar com Google</button>
+<button class="btn-red" onclick="logout()">Sair</button>
+</div>
+
+<!-- PUBLICAR -->
+<div class="card">
+<h2>📦 Publicar item</h2>
+
+<input id="nome" placeholder="Nome">
+<input id="cidade" placeholder="Cidade">
+
+<select id="categoria">
+<option>Livro</option>
+<option>Caderno</option>
+<option>Mochila</option>
+<option>Material</option>
+</select>
+
+<textarea id="descricao" placeholder="Descrição"></textarea>
+
+<input id="imagem" type="file" accept="image/*" capture="environment">
+
+<button class="btn" onclick="publicar()">Publicar</button>
+</div>
+
+<!-- LISTA -->
+<div id="listaItens"></div>
+
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {
+getFirestore,collection,addDoc,onSnapshot,doc,updateDoc,arrayUnion,arrayRemove
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+import {
+getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+/* FIREBASE CONFIG */
+const firebaseConfig = {
+apiKey:"AIzaSyBQtiPkVwkTYNmbGXKD96FIOITKQ8oI62A",
+authDomain:"eco-troca-fecb3.firebaseapp.com",
+projectId:"eco-troca-fecb3",
+storageBucket:"eco-troca-fecb3.appspot.com",
+messagingSenderId:"813565372",
+appId:"1:813565372:web:470f850a6f11fda93b97b9"
 };
 
-/* =========================
-   🟢 ACEITAR
-========================= */
-window.aceitar = async (id) => {
-  if (!user) return;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-  await updateDoc(doc(db, "itens", id), {
-    status: "aceito"
-  });
+let user=null;
+let dadosCache=[];
+let imagemBase64="";
+
+const lista=document.getElementById("listaItens");
+
+/* IMAGEM */
+document.getElementById("imagem").addEventListener("change",e=>{
+const file=e.target.files[0];
+const reader=new FileReader();
+reader.onload=ev=>imagemBase64=ev.target.result;
+reader.readAsDataURL(file);
+});
+
+/* LOGIN */
+window.loginGoogle=()=>signInWithPopup(auth,new GoogleAuthProvider());
+window.logout=()=>signOut(auth);
+
+onAuthStateChanged(auth,u=>{
+user=u;
+document.getElementById("userInfo").innerText =
+user?user.displayName:"Não logado";
+});
+
+/* PUBLICAR */
+window.publicar=async()=>{
+if(!user)return alert("Faça login!");
+
+await addDoc(collection(db,"itens"),{
+nome:nome.value,
+cidade:cidade.value,
+categoria:categoria.value,
+descricao:descricao.value,
+imagem:imagemBase64||"",
+owner:user.displayName,
+uid:user.uid,
+likes:[],
+chat:[],
+status:"livre"
+});
+
+alert("Publicado!");
 };
 
-/* =========================
-   🔴 RECUSAR
-========================= */
-window.recusar = async (id) => {
-  if (!user) return;
+/* LIKE */
+window.like=async(id,likes)=>{
+if(!user)return;
 
-  await updateDoc(doc(db, "itens", id), {
-    status: "livre",
-    interessado: null
-  });
-};
+const ref=doc(db,"itens",id);
 
-/* =========================
-   💬 ENVIAR MENSAGEM
-========================= */
-window.enviarMsg = async (id) => {
-  if (!user) return;
-
-  const input = document.getElementById("msg-" + id);
-  const msg = (input?.value || "").trim();
-  if (!msg) return;
-
-  await updateDoc(doc(db, "itens", id), {
-    chat: arrayUnion({
-      user: user.displayName,
-      msg,
-      time: Date.now()
-    })
-  });
-
-  input.value = "";
-};
-
-/* =========================
-   🧱 RENDER (CORRIGIDO)
-========================= */
-function render(data, cidadeF = "", catF = "") {
-  lista.innerHTML = "";
-
-  data
-    .filter(i => {
-      const cidade = (i.cidade || "").toLowerCase();
-      const categoria = i.categoria || "";
-
-      return cidade.includes(cidadeF) && (!catF || categoria === catF);
-    })
-    .forEach(i => {
-
-      const likes = Array.isArray(i.likes) ? i.likes : [];
-      const chat = Array.isArray(i.chat) ? i.chat : [];
-
-      const isOwner = i.ownerUid === user?.uid; // ✔ CORRIGIDO
-
-      lista.innerHTML += `
-        <div class="card">
-
-          <h3>${i.nome || ""}</h3>
-          <p>${i.cidade || ""} | ${i.categoria || ""}</p>
-          <p>${i.descricao || ""}</p>
-
-          ${i.imagem ? `<img src="${i.imagem}" style="width:100%;border-radius:10px">` : ""}
-
-          ${i.status === "negociacao" ? '<div class="badge">🟡 Em negociação</div>' : ""}
-          ${i.status === "aceito" ? '<div class="badge" style="background:green">🟢 Aceito</div>' : ""}
-
-          <button class="btn-blue" onclick="like('${i.id}')">
-            ❤️ ${likes.length}
-          </button>
-
-          <button class="btn-yellow" onclick="trocar('${i.id}')">
-            🔁 Trocar
-          </button>
-
-          ${isOwner ? `
-            <button class="btn-blue" onclick="aceitar('${i.id}')">✔ Aceitar</button>
-            <button class="btn-red" onclick="recusar('${i.id}')">✖ Recusar</button>
-          ` : ""}
-
-          <div style="margin-top:10px">
-            <strong>💬 Chat</strong>
-
-            <div>
-              ${chat.map(m => `
-                <p>👤 ${m.user || "user"}: ${m.msg || ""}</p>
-              `).join("")}
-            </div>
-
-            <input id="msg-${i.id}" placeholder="Mensagem...">
-            <button class="btn-blue" onclick="enviarMsg('${i.id}')">
-              Enviar
-            </button>
-          </div>
-
-        </div>
-      `;
-    });
+if(likes.includes(user.uid)){
+await updateDoc(ref,{likes:arrayRemove(user.uid)});
+}else{
+await updateDoc(ref,{likes:arrayUnion(user.uid)});
 }
+};
+
+/* TROCA */
+window.trocar=async(id)=>{
+if(!user)return;
+
+await updateDoc(doc(db,"itens",id),{
+status:"negociacao",
+chat:arrayUnion({
+uid:user.uid,
+user:user.displayName,
+msg:"Tenho interesse na troca",
+time:Date.now()
+})
+});
+};
+
+/* ENVIAR MENSAGEM */
+window.enviarMsg=async(id)=>{
+if(!user)return;
+
+const input=document.getElementById("msg-"+id);
+const msg=(input?.value||"").trim();
+if(!msg)return;
+
+await updateDoc(doc(db,"itens",id),{
+chat:arrayUnion({
+uid:user.uid,
+user:user.displayName,
+msg,
+time:Date.now()
+})
+});
+
+input.value="";
+};
+
+/* RENDER */
+function render(data){
+
+lista.innerHTML="";
+
+data.forEach(i=>{
+
+const likes=Array.isArray(i.likes)?i.likes:[];
+const chat=Array.isArray(i.chat)?i.chat:[];
+
+const isOwner=i.uid===user?.uid;
+
+lista.innerHTML+=`
+<div class="card">
+
+<h3>${i.nome||""}</h3>
+<p>${i.cidade||""} | ${i.categoria||""}</p>
+<p>${i.descricao||""}</p>
+
+${i.status==="negociacao"?'<div class="badge">🟡 Em negociação</div>':""}
+
+${i.imagem?`<img src="${i.imagem}" style="width:100%">`:""}
+
+<button class="btn-blue" onclick="like('${i.id}',${JSON.stringify(likes)})">
+❤️ ${likes.length}
+</button>
+
+<button class="btn-yellow" onclick="trocar('${i.id}')">
+🔁 Trocar
+</button>
+
+<div style="margin-top:10px">
+
+<input id="msg-${i.id}" placeholder="Mensagem...">
+<button class="btn-blue" onclick="enviarMsg('${i.id}')">Enviar</button>
+
+<div>
+${chat.map(m=>`
+<p>👤 ${m.user||"user"}: ${m.msg||""}</p>
+`).join("")}
+</div>
+
+</div>
+
+</div>
+`;
+});
+}
+
+/* FIRESTORE REALTIME */
+onSnapshot(collection(db,"itens"),snap=>{
+dadosCache=[];
+snap.forEach(d=>dadosCache.push({id:d.id,...d.data()}));
+render(dadosCache);
+});
+</script>
+
+</body>
+</html>
