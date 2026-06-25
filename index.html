@@ -1,83 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eco Troca - Feira de Ciências</title>
-
-<style>
-body{font-family:Arial;margin:0;background:#eef7ee}
-header{background:#2e7d32;color:#fff;padding:20px;text-align:center}
-.container{max-width:900px;margin:auto;padding:20px}
-.card{background:#fff;padding:15px;margin-bottom:15px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
-input,select,textarea{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:1px solid #ccc}
-button{padding:10px;border:none;border-radius:6px;cursor:pointer;margin-top:5px}
-.btn{background:#2e7d32;color:#fff}
-.btn-blue{background:#1565c0;color:#fff}
-.btn-red{background:#c62828;color:#fff}
-.btn-yellow{background:#f9a825;color:#000}
-.userBox{display:flex;align-items:center;gap:10px}
-.userBox img{width:40px;height:40px;border-radius:50%}
-.badge{padding:4px 8px;background:orange;color:white;border-radius:6px;font-size:12px}
-</style>
-</head>
-
-<body>
-
-<header>
-<h1>🌍 Eco Troca</h1>
-<p>Feira de Ciências</p>
-</header>
-
-<div class="container">
-
-<!-- LOGIN -->
-<div class="card">
-<h2>👤 Usuário</h2>
-<div id="userInfo">Não logado</div>
-<button class="btn" onclick="loginGoogle()">Entrar com Google</button>
-<button class="btn-red" onclick="logout()">Sair</button>
-</div>
-
-<!-- PUBLICAR -->
-<div class="card">
-<h2>📦 Publicar item</h2>
-
-<input id="nome" placeholder="Nome">
-<input id="cidade" placeholder="Cidade">
-
-<select id="categoria">
-<option>Livro</option>
-<option>Caderno</option>
-<option>Mochila</option>
-<option>Material</option>
-</select>
-
-<textarea id="descricao" placeholder="Descrição"></textarea>
-
-<input id="imagem" type="file" accept="image/*" capture="environment">
-
-<button class="btn" onclick="publicar()">Publicar</button>
-</div>
-
-<!-- FILTRO -->
-<div class="card">
-<h2>🔎 Filtro</h2>
-<input id="filtroCidade" placeholder="Cidade">
-<select id="filtroCategoria">
-<option value="">Todas</option>
-<option>Livro</option>
-<option>Caderno</option>
-<option>Mochila</option>
-<option>Material</option>
-</select>
-<button class="btn-blue" onclick="aplicarFiltro()">Filtrar</button>
-</div>
-
-<div id="listaItens"></div>
-
-</div>
-
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import {
@@ -137,7 +57,8 @@ owner:user.displayName,
 uid:user.uid,
 likes:[],
 chat:{},
-status:"livre"
+status:"livre",
+interessado:null
 });
 
 alert("Publicado!");
@@ -157,7 +78,7 @@ await updateDoc(ref,{likes:arrayUnion(nome)});
 }
 };
 
-/* 🔁 TROCA + CHAT PRIVADO */
+/* 🔁 PEDIR TROCA */
 window.trocar=async(id)=>{
 if(!user)return;
 
@@ -165,6 +86,10 @@ const ref=doc(db,"itens",id);
 
 await updateDoc(ref,{
 status:"negociacao",
+interessado:{
+uid:user.uid,
+nome:user.displayName
+},
 [`chat.${user.uid}`]:arrayUnion({
 user:user.displayName,
 msg:"Tenho interesse na troca",
@@ -173,7 +98,26 @@ time:Date.now()
 });
 };
 
-/* ENVIAR MSG */
+/* 🟢 ACEITAR TROCA */
+window.aceitar=async(id)=>{
+const ref=doc(db,"itens",id);
+
+await updateDoc(ref,{
+status:"aceito"
+});
+};
+
+/* 🔴 RECUSAR TROCA */
+window.recusar=async(id)=>{
+const ref=doc(db,"itens",id);
+
+await updateDoc(ref,{
+status:"livre",
+interessado:null
+});
+};
+
+/* 💬 ENVIAR MSG */
 window.enviarMsg=async(id)=>{
 const msg=document.getElementById("msg-"+id).value;
 if(!msg)return;
@@ -219,9 +163,10 @@ lista.innerHTML+=`
 <p>${i.cidade} | ${i.categoria}</p>
 <p>${i.descricao}</p>
 
-${i.status==="negociacao"?'<div class="badge">🟡 Em negociação</div>':""}
-
 ${i.imagem?`<img src="${i.imagem}" style="width:100%">`:""}
+
+${i.status==="negociacao"?'<div class="badge">🟡 Em negociação</div>':""}
+${i.status==="aceito"?'<div class="badge" style="background:green">🟢 Aceito</div>':""}
 
 <button class="btn-blue" onclick="like('${i.id}',${JSON.stringify(likes)})">
 ❤️ ${likes.length}
@@ -231,7 +176,14 @@ ${i.imagem?`<img src="${i.imagem}" style="width:100%">`:""}
 🔁 Trocar
 </button>
 
+${i.interessado && i.owner===user?.displayName?`
+<button class="btn-blue" onclick="aceitar('${i.id}')">✔ Aceitar</button>
+<button class="btn-red" onclick="recusar('${i.id}')">✖ Recusar</button>
+`: ""}
+
 <div style="margin-top:10px">
+<strong>💬 Chat</strong>
+
 <input id="msg-${i.id}" placeholder="Mensagem...">
 <button class="btn-blue" onclick="enviarMsg('${i.id}')">Enviar</button>
 
@@ -252,6 +204,3 @@ snap.forEach(d=>dadosCache.push({id:d.id,...d.data()}));
 render(dadosCache);
 });
 </script>
-
-</body>
-</html>
