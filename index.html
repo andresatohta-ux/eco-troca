@@ -253,9 +253,7 @@ Quero Trocar
 
 </section>
 
-<h2 class="titulo">
-Itens Disponíveis
-</h2>
+
 
 <section class="formulario">
 
@@ -266,15 +264,7 @@ Itens Disponíveis
 <textarea id="descricao" placeholder="Descrição"></textarea>
 
 <button onclick="publicarItem()">
-let usuario =
-JSON.parse(localStorage.getItem("usuarioLogado"));
-
-if(!usuario){
-alert("Faça login para publicar um item.");
-window.location.href="login.html";
-return;
-}
-  Publicar
+Publicar
 </button>
 
 </section>
@@ -303,6 +293,23 @@ JSON.parse(localStorage.getItem("itens"))
 
 function publicarItem(){
 
+let usuario =
+JSON.parse(localStorage.getItem("usuarioLogado"));
+
+if(!usuario){
+alert("Faça login para publicar um item.");
+window.location.href="login.html";
+return;
+}
+
+let nome =
+document.getElementById("nome").value;
+
+let cidade =
+document.getElementById("cidade").value;
+
+let descricao =
+document.getElementById("descricao").value;
 let nome =
 document.getElementById("nome").value;
 
