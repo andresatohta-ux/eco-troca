@@ -6,65 +6,19 @@
 <title>Eco Troca - Feira de Ciências</title>
 
 <style>
-body{
-font-family: Arial;
-margin:0;
-background:#eef7ee;
-}
-
-header{
-background:#2e7d32;
-color:white;
-padding:20px;
-text-align:center;
-}
-
-.container{
-max-width:900px;
-margin:auto;
-padding:20px;
-}
-
-.card{
-background:white;
-padding:15px;
-margin-bottom:15px;
-border-radius:10px;
-box-shadow:0 2px 5px rgba(0,0,0,0.1);
-}
-
-input, select, textarea{
-width:100%;
-padding:10px;
-margin:5px 0;
-border-radius:6px;
-border:1px solid #ccc;
-}
-
-button{
-padding:10px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-margin-top:5px;
-}
-
-.btn{background:#2e7d32;color:white;}
-.btn-blue{background:#1565c0;color:white;}
-.btn-red{background:#c62828;color:white;}
-.btn-yellow{background:#f9a825;color:black;}
-
-.userBox{
-display:flex;
-align-items:center;
-gap:10px;
-}
-
-.userBox img{
-width:40px;
-height:40px;
-border-radius:50%;
-}
+body{font-family:Arial;margin:0;background:#eef7ee}
+header{background:#2e7d32;color:#fff;padding:20px;text-align:center}
+.container{max-width:900px;margin:auto;padding:20px}
+.card{background:#fff;padding:15px;margin-bottom:15px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+input,select,textarea{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:1px solid #ccc}
+button{padding:10px;border:none;border-radius:6px;cursor:pointer;margin-top:5px}
+.btn{background:#2e7d32;color:#fff}
+.btn-blue{background:#1565c0;color:#fff}
+.btn-red{background:#c62828;color:#fff}
+.btn-yellow{background:#f9a825;color:#000}
+.userBox{display:flex;align-items:center;gap:10px}
+.userBox img{width:40px;height:40px;border-radius:50%}
+.badge{padding:4px 8px;background:orange;color:white;border-radius:6px;font-size:12px}
 </style>
 </head>
 
@@ -72,7 +26,7 @@ border-radius:50%;
 
 <header>
 <h1>🌍 Eco Troca</h1>
-<p>Feira de Ciências - Sustentabilidade e Reutilização</p>
+<p>Feira de Ciências</p>
 </header>
 
 <div class="container">
@@ -89,14 +43,14 @@ border-radius:50%;
 <div class="card">
 <h2>📦 Publicar item</h2>
 
-<input id="nome" placeholder="Nome do item">
+<input id="nome" placeholder="Nome">
 <input id="cidade" placeholder="Cidade">
 
 <select id="categoria">
-<option value="Livro">📚 Livro</option>
-<option value="Caderno">📒 Caderno</option>
-<option value="Mochila">🎒 Mochila</option>
-<option value="Material">✏ Material escolar</option>
+<option>Livro</option>
+<option>Caderno</option>
+<option>Mochila</option>
+<option>Material</option>
 </select>
 
 <textarea id="descricao" placeholder="Descrição"></textarea>
@@ -106,20 +60,18 @@ border-radius:50%;
 <button class="btn" onclick="publicar()">Publicar</button>
 </div>
 
-<!-- FILTROS -->
+<!-- FILTRO -->
 <div class="card">
-<h2>🔎 Filtros</h2>
-
-<input id="filtroCidade" placeholder="Filtrar por cidade">
+<h2>🔎 Filtro</h2>
+<input id="filtroCidade" placeholder="Cidade">
 <select id="filtroCategoria">
-<option value="">Todas categorias</option>
-<option value="Livro">📚 Livro</option>
-<option value="Caderno">📒 Caderno</option>
-<option value="Mochila">🎒 Mochila</option>
-<option value="Material">✏ Material escolar</option>
+<option value="">Todas</option>
+<option>Livro</option>
+<option>Caderno</option>
+<option>Mochila</option>
+<option>Material</option>
 </select>
-
-<button class="btn-blue" onclick="aplicarFiltro()">Aplicar filtro</button>
+<button class="btn-blue" onclick="aplicarFiltro()">Filtrar</button>
 </div>
 
 <div id="listaItens"></div>
@@ -127,191 +79,166 @@ border-radius:50%;
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import {
-getFirestore,
-collection,
-addDoc,
-onSnapshot,
-doc,
-updateDoc,
-arrayUnion,
-arrayRemove
+getFirestore,collection,addDoc,onSnapshot,doc,updateDoc,arrayUnion,arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
 import {
-getAuth,
-GoogleAuthProvider,
-signInWithPopup,
-onAuthStateChanged,
-signOut
+getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
-/* FIREBASE */
 const firebaseConfig = {
-apiKey: "AIzaSyBQtiPkVwkTYNmbGXKD96FIOITKQ8oI62A",
-authDomain: "eco-troca-fecb3.firebaseapp.com",
-projectId: "eco-troca-fecb3",
-storageBucket: "eco-troca-fecb3.firebasestorage.app",
-messagingSenderId: "813565372",
-appId: "1:813565372:web:470f850a6f11fda93b97b9"
+apiKey:"AIzaSyBQtiPkVwkTYNmbGXKD96FIOITKQ8oI62A",
+authDomain:"eco-troca-fecb3.firebaseapp.com",
+projectId:"eco-troca-fecb3",
+storageBucket:"eco-troca-fecb3.firebasestorage.app",
+messagingSenderId:"813565372",
+appId:"1:813565372:web:470f850a6f11fda93b97b9"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-let user = null;
-let dadosCache = [];
-let imagemBase64 = "";
+let user=null;
+let dadosCache=[];
+let imagemBase64="";
 
 /* IMAGEM */
-document.getElementById("imagem").addEventListener("change", e=>{
-const file = e.target.files[0];
-const reader = new FileReader();
-reader.onload = ev => imagemBase64 = ev.target.result;
+document.getElementById("imagem").addEventListener("change",e=>{
+const file=e.target.files[0];
+const reader=new FileReader();
+reader.onload=ev=>imagemBase64=ev.target.result;
 reader.readAsDataURL(file);
 });
 
 /* LOGIN */
-window.loginGoogle = async function(){
-const provider = new GoogleAuthProvider();
-await signInWithPopup(auth, provider);
-}
+window.loginGoogle=()=>signInWithPopup(auth,new GoogleAuthProvider());
+window.logout=()=>signOut(auth);
 
-window.logout = async function(){
-await signOut(auth);
-}
-
-/* USER */
-onAuthStateChanged(auth,(u)=>{
-user = u;
-document.getElementById("userInfo").innerHTML =
-user ? `👤 ${user.displayName}` : "Não logado";
+onAuthStateChanged(auth,u=>{
+user=u;
+document.getElementById("userInfo").innerText =
+user?user.displayName:"Não logado";
 });
 
 /* PUBLICAR */
-window.publicar = async function(){
-
-if(!user){
-alert("Faça login!");
-return;
-}
+window.publicar=async()=>{
+if(!user)return alert("login!");
 
 await addDoc(collection(db,"itens"),{
-nome: nome.value,
-cidade: cidade.value,
-categoria: categoria.value,
-descricao: descricao.value,
-imagem: imagemBase64 || "",
-owner: user.displayName,
-photo: user.photoURL,
-likes: [],
-chat: []
+nome:nome.value,
+cidade:cidade.value,
+categoria:categoria.value,
+descricao:descricao.value,
+imagem:imagemBase64||"",
+owner:user.displayName,
+uid:user.uid,
+likes:[],
+chat:{},
+status:"livre"
 });
 
 alert("Publicado!");
-}
+};
 
-/* ❤️ CURTIR (TOGGLE REAL) */
-window.like = async function(id, likes){
+/* ❤️ LIKE */
+window.like=async(id,likes)=>{
+if(!user)return;
 
-if(!user){
-alert("Faça login primeiro!");
-return;
-}
+const ref=doc(db,"itens",id);
+const nome=user.displayName;
 
-const ref = doc(db,"itens",id);
-const nome = user.displayName;
-
-if((likes || []).includes(nome)){
-await updateDoc(ref,{
-likes: arrayRemove(nome)
-});
+if(likes.includes(nome)){
+await updateDoc(ref,{likes:arrayRemove(nome)});
 }else{
+await updateDoc(ref,{likes:arrayUnion(nome)});
+}
+};
+
+/* 🔁 TROCA + CHAT PRIVADO */
+window.trocar=async(id)=>{
+if(!user)return;
+
+const ref=doc(db,"itens",id);
+
 await updateDoc(ref,{
-likes: arrayUnion(nome)
+status:"negociacao",
+[`chat.${user.uid}`]:arrayUnion({
+user:user.displayName,
+msg:"Tenho interesse na troca",
+time:Date.now()
+})
 });
-}
-}
+};
 
-/* 🔁 QUERO TROCAR (AGORA CHAT REAL) */
-window.trocar = async function(id){
+/* ENVIAR MSG */
+window.enviarMsg=async(id)=>{
+const msg=document.getElementById("msg-"+id).value;
+if(!msg)return;
 
-if(!user){
-alert("Faça login primeiro!");
-return;
-}
-
-const ref = doc(db,"itens",id);
+const ref=doc(db,"itens",id);
 
 await updateDoc(ref,{
-chat: arrayUnion({
-user: user.displayName,
-msg: "Tenho interesse em trocar",
-time: Date.now()
+[`chat.${user.uid}`]:arrayUnion({
+user:user.displayName,
+msg,
+time:Date.now()
 })
 });
 
-alert("Mensagem enviada!");
-}
+document.getElementById("msg-"+id).value="";
+};
 
 /* FILTRO */
-window.aplicarFiltro = function(){
+window.aplicarFiltro=()=>{
+render(dadosCache,
+filtroCidade.value.toLowerCase(),
+filtroCategoria.value
+);
+};
 
-let cidadeF = filtroCidade.value.toLowerCase();
-let catF = filtroCategoria.value;
+const lista=document.getElementById("listaItens");
 
-render(dadosCache, cidadeF, catF);
-}
+function render(data,cidadeF="",catF=""){
 
-/* LISTA */
-const lista = document.getElementById("listaItens");
+lista.innerHTML="";
 
-function render(data, cidadeF="", catF=""){
+data.filter(i=>{
+return i.cidade.toLowerCase().includes(cidadeF)&&(!catF||i.categoria===catF);
+}).forEach(i=>{
 
-lista.innerHTML = "";
+const likes=i.likes||[];
+const chat=i.chat?.[user?.uid]||[];
 
-data
-.filter(i=>{
-let okCidade = i.cidade.toLowerCase().includes(cidadeF);
-let okCat = catF ? i.categoria === catF : true;
-return okCidade && okCat;
-})
-.forEach((i)=>{
-
-let likes = i.likes || [];
-let chat = i.chat || [];
-let isOwner = i.owner === user?.displayName;
-
-lista.innerHTML += `
+lista.innerHTML+=`
 <div class="card">
 
 <h3>${i.nome}</h3>
-<p>📍 ${i.cidade}</p>
-<p>📚 ${i.categoria}</p>
+<p>${i.cidade} | ${i.categoria}</p>
 <p>${i.descricao}</p>
 
-${i.photo ? `<div class="userBox">
-<img src="${i.photo}">
-<strong>${i.owner}</strong>
-</div>` : ""}
+${i.status==="negociacao"?'<div class="badge">🟡 Em negociação</div>':""}
 
-${i.imagem ? `<img src="${i.imagem}" style="width:100%;border-radius:10px;">` : ""}
+${i.imagem?`<img src="${i.imagem}" style="width:100%">`:""}
 
-<button class="btn-blue" onclick="like('${i.id}', ${JSON.stringify(likes)})">
-❤️ Curtir (${likes.length})
+<button class="btn-blue" onclick="like('${i.id}',${JSON.stringify(likes)})">
+❤️ ${likes.length}
 </button>
 
 <button class="btn-yellow" onclick="trocar('${i.id}')">
-🔁 Quero trocar
+🔁 Trocar
 </button>
 
-<div style="margin-top:10px;background:#f4f4f4;padding:8px;border-radius:8px;">
-<strong>💬 Chat:</strong>
-${chat.map(c=>`
-<p>👤 ${c.user}: ${c.msg}</p>
-`).join("")}
+<div style="margin-top:10px">
+<input id="msg-${i.id}" placeholder="Mensagem...">
+<button class="btn-blue" onclick="enviarMsg('${i.id}')">Enviar</button>
+
+<div>
+${chat.map(m=>`<p>👤 ${m.user}: ${m.msg}</p>`).join("")}
+</div>
+
 </div>
 
 </div>
@@ -319,12 +246,9 @@ ${chat.map(c=>`
 });
 }
 
-/* FIREBASE */
 onSnapshot(collection(db,"itens"),snap=>{
-dadosCache = [];
-snap.forEach(d=>{
-dadosCache.push({id:d.id,...d.data()});
-});
+dadosCache=[];
+snap.forEach(d=>dadosCache.push({id:d.id,...d.data()}));
 render(dadosCache);
 });
 </script>
