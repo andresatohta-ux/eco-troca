@@ -14,7 +14,8 @@ font-family:Arial,sans-serif;
 }
 
 body{
-background:linear-gradient(180deg,#e8f5e9,#f1f8e9);
+background:#f4fbf4;
+color:#222;
 }
 
 /* HEADER */
@@ -26,14 +27,21 @@ background:white;
 display:flex;
 justify-content:space-between;
 align-items:center;
-padding:15px;
-box-shadow:0 2px 10px rgba(0,0,0,.1);
+padding:14px 16px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
 
 .logo{
 font-size:20px;
 font-weight:bold;
 color:#2e7d32;
+}
+
+/* USER */
+#usuarioBox{
+font-size:13px;
+color:#2e7d32;
+font-weight:bold;
 }
 
 /* HERO */
@@ -50,15 +58,16 @@ color:#2e7d32;
 .hero p{
 font-size:13px;
 color:#666;
+margin-top:6px;
 }
 
 /* FORM */
 .formulario{
 background:white;
-margin:15px;
-padding:15px;
-border-radius:15px;
-box-shadow:0 5px 15px rgba(0,0,0,.08);
+margin:12px;
+padding:14px;
+border-radius:14px;
+box-shadow:0 4px 12px rgba(0,0,0,.06);
 }
 
 input,textarea{
@@ -67,6 +76,7 @@ padding:10px;
 margin-top:10px;
 border:1px solid #ddd;
 border-radius:8px;
+font-size:14px;
 }
 
 button{
@@ -77,53 +87,75 @@ background:#43a047;
 color:white;
 border:none;
 border-radius:10px;
+font-size:14px;
+cursor:pointer;
+transition:0.2s;
 }
 
-/* LISTA */
+button:active{
+transform:scale(0.98);
+}
+
+/* FILTER */
+#filtro{
+margin-top:10px;
+}
+
+/* LIST */
 #listaItens{
 display:flex;
 flex-direction:column;
-gap:15px;
-padding:15px;
+gap:12px;
+padding:12px;
 }
 
+/* CARD */
 .item{
 background:white;
-padding:15px;
-border-radius:15px;
+padding:14px;
+border-radius:14px;
 border-left:5px solid #43a047;
-box-shadow:0 5px 15px rgba(0,0,0,.08);
+box-shadow:0 4px 12px rgba(0,0,0,.06);
 }
 
 .item h3{
 color:#2e7d32;
+font-size:16px;
+margin-bottom:4px;
+}
+
+.item p{
+font-size:13px;
+margin-top:3px;
 }
 
 .small{
 font-size:12px;
 color:gray;
+margin-top:6px;
 }
 
+/* CHAT */
 .chat{
 margin-top:10px;
 background:#f1f8e9;
-padding:10px;
+padding:8px;
 border-radius:10px;
 font-size:13px;
 }
 
+/* BUTTON ITEM */
 .item button{
 width:auto;
-padding:8px 10px;
+padding:7px 10px;
 font-size:12px;
 margin-top:8px;
 border-radius:8px;
 }
 
-#usuarioBox{
-color:#2e7d32;
-font-weight:bold;
-font-size:13px;
+/* RESPONSIVO */
+@media(max-width:600px){
+.hero h1{font-size:20px;}
 }
 </style>
 </head>
@@ -132,15 +164,12 @@ font-size:13px;
 
 <header>
 <div class="logo">🌱 Eco Troca</div>
-
-<div>
-<span id="usuarioBox"></span>
-</div>
+<div id="usuarioBox"></div>
 </header>
 
 <section class="hero">
-<h1>Troque hoje, transforme o amanhã!</h1>
-<p>Reutilize, economize e ajude o planeta 🌱</p>
+<h1>Troque hoje, transforme o amanhã</h1>
+<p>Reutilize objetos e ajude o planeta 🌱</p>
 </section>
 
 <section class="formulario">
@@ -148,9 +177,9 @@ font-size:13px;
 <input id="cidade" placeholder="Cidade">
 <textarea id="descricao" placeholder="Descrição"></textarea>
 
-<button onclick="publicar()">Publicar</button>
+<button onclick="publicar()">Publicar item</button>
 
-<input id="filtro" placeholder="Filtrar cidade" onkeyup="render()">
+<input id="filtro" placeholder="Filtrar por cidade" onkeyup="render()">
 </section>
 
 <div id="listaItens"></div>
@@ -159,35 +188,65 @@ font-size:13px;
 let user = JSON.parse(localStorage.getItem("usuarioLogado"));
 let itens = JSON.parse(localStorage.getItem("itens")) || [];
 
+/* USER */
 document.getElementById("usuarioBox").innerText =
 user ? "👤 " + user.nome : "Não logado";
 
+/* PUBLICAR */
 function publicar(){
-if(!user){ alert("Faça login"); return; }
+if(!user){
+alert("Faça login primeiro!");
+return;
+}
 
 let nome = document.getElementById("nome").value;
 let cidade = document.getElementById("cidade").value;
 let descricao = document.getElementById("descricao").value;
 
+if(!nome || !cidade){
+alert("Preencha os campos!");
+return;
+}
+
 itens.push({
 id:Date.now(),
-nome,cidade,descricao,
+nome,
+cidade,
+descricao,
 owner:user.nome,
 chat:[]
 });
 
 localStorage.setItem("itens", JSON.stringify(itens));
+
+document.getElementById("nome").value="";
+document.getElementById("cidade").value="";
+document.getElementById("descricao").value="";
+
 render();
 }
 
+/* CHAT */
+function chat(id){
+let msg = prompt("Mensagem:");
+if(!msg) return;
+
+let item = itens.find(i=>i.id===id);
+item.chat.push(user.nome+": "+msg);
+
+localStorage.setItem("itens", JSON.stringify(itens));
+render();
+}
+
+/* RENDER */
 function render(){
 let filtro = document.getElementById("filtro").value.toLowerCase();
 let lista = document.getElementById("listaItens");
 lista.innerHTML = "";
 
 itens
-.filter(i => i.cidade.toLowerCase().includes(filtro))
-.forEach(i => {
+.filter(i=>i.cidade.toLowerCase().includes(filtro))
+.forEach(i=>{
 
 lista.innerHTML += `
 <div class="item">
@@ -204,17 +263,6 @@ ${i.chat.map(c=>`<div>${c}</div>`).join("")}
 </div>
 `;
 });
-}
-
-function chat(id){
-let msg = prompt("Mensagem:");
-if(!msg) return;
-
-let item = itens.find(i=>i.id===id);
-item.chat.push(user.nome + ": " + msg);
-
-localStorage.setItem("itens", JSON.stringify(itens));
-render();
 }
 
 render();
