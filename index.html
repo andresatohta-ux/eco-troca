@@ -22,167 +22,179 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-let user=null;
-let imagemBase64="";
-const lista=document.getElementById("listaItens");
+let user = null;
+let imagemBase64 = "";
+const lista = document.getElementById("listaItens");
 
 /* NAV */
-window.showTab=(tab)=>{
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+window.showTab = (tab) => {
+document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
 document.getElementById(tab).classList.add("active");
 };
 
 /* IMAGE */
-document.getElementById("imagem")?.addEventListener("change",e=>{
-const file=e.target.files[0];
-const reader=new FileReader();
-reader.onload=ev=>imagemBase64=ev.target.result;
+document.getElementById("imagem")?.addEventListener("change", e => {
+const file = e.target.files?.[0];
+if (!file) return;
+
+const reader = new FileReader();
+reader.onload = ev => imagemBase64 = ev.target.result;
 reader.readAsDataURL(file);
 });
 
 /* LOGIN */
-window.loginGoogle=()=>signInWithPopup(auth,new GoogleAuthProvider());
-window.logout=()=>signOut(auth);
+window.loginGoogle = () => signInWithPopup(auth, new GoogleAuthProvider());
+window.logout = () => signOut(auth);
 
-onAuthStateChanged(auth,u=>{
-user=u;
-document.getElementById("userInfo").innerText=
-user?user.displayName:"Não logado";
+onAuthStateChanged(auth, u => {
+user = u;
+document.getElementById("userInfo").innerText =
+user ? user.displayName : "Não logado";
 });
 
+/* GET INPUT SAFE */
+function getInput(id){
+const el = document.getElementById(id);
+return el ? el.value : "";
+}
+
 /* PUBLICAR */
-window.publicar=async()=>{
-if(!user)return alert("login!");
+window.publicar = async () => {
+if (!user) return alert("Faça login!");
 
 await addDoc(collection(db,"itens"),{
-nome:nome.value,
-cidade:cidade.value,
-categoria:categoria.value,
-descricao:descricao.value,
-imagem:imagemBase64||"",
-uid:user.uid,
-owner:user.displayName,
-likes:[],
-status:"livre",
-
-interessado:null,
-propostas:[]
+nome: getInput("nome"),
+cidade: getInput("cidade"),
+categoria: getInput("categoria"),
+descricao: getInput("descricao"),
+imagem: imagemBase64 || "",
+uid: user.uid,
+owner: user.displayName,
+likes: [],
+status: "livre",
+interessado: null,
+propostas: []
 });
 };
 
 /* LIKE */
-window.like=async(id,likes)=>{
-const ref=doc(db,"itens",id);
+window.like = async (id, likes = []) => {
+if (!user) return;
 
-if(likes.includes(user.uid)){
+const ref = doc(db,"itens",id);
+
+if (likes.includes(user.uid)) {
 await updateDoc(ref,{likes:arrayRemove(user.uid)});
-}else{
+} else {
 await updateDoc(ref,{likes:arrayUnion(user.uid)});
 }
 };
 
 /* 🔁 INICIAR NEGOCIAÇÃO */
-window.trocar=async(id)=>{
-if(!user)return;
+window.trocar = async (id) => {
+if (!user) return;
 
-const ref=doc(db,"itens",id);
+const ref = doc(db,"itens",id);
 
 await updateDoc(ref,{
-status:"negociacao",
-interessado:{
-uid:user.uid,
-nome:user.displayName
+status: "negociacao",
+interessado: {
+uid: user.uid,
+nome: user.displayName
 },
-propostas:arrayUnion({
-tipo:"inicio",
-user:user.displayName,
-msg:"Iniciou negociação",
-time:Date.now()
+propostas: arrayUnion({
+tipo: "inicio",
+user: user.displayName,
+msg: "Iniciou negociação",
+time: Date.now()
 })
 });
 };
 
 /* 💬 ENVIAR PROPOSTA */
-window.enviarMsg=async(id)=>{
-if(!user)return;
+window.enviarMsg = async (id) => {
+if (!user) return;
 
-const input=document.getElementById("msg-"+id);
-const msg=(input?.value||"").trim();
-if(!msg)return;
+const input = document.getElementById("msg-" + id);
+const msg = (input?.value || "").trim();
+if (!msg) return;
 
 await updateDoc(doc(db,"itens",id),{
-propostas:arrayUnion({
-tipo:"msg",
-user:user.displayName,
+propostas: arrayUnion({
+tipo: "msg",
+user: user.displayName,
 msg,
-time:Date.now()
+time: Date.now()
 })
 });
 
-input.value="";
+input.value = "";
 };
 
 /* ✔ ACEITAR */
-window.aceitar=async(id)=>{
-if(!user)return;
+window.aceitar = async (id) => {
+if (!user) return;
 
 await updateDoc(doc(db,"itens",id),{
-status:"aceito",
-propostas:arrayUnion({
-tipo:"status",
-user:user.displayName,
-msg:"Negociação aceita",
-time:Date.now()
+status: "aceito",
+propostas: arrayUnion({
+tipo: "status",
+user: user.displayName,
+msg: "Negociação aceita",
+time: Date.now()
 })
 });
 };
 
 /* ✖ RECUSAR */
-window.recusar=async(id)=>{
-if(!user)return;
+window.recusar = async (id) => {
+if (!user) return;
 
 await updateDoc(doc(db,"itens",id),{
-status:"recusado",
-propostas:arrayUnion({
-tipo:"status",
-user:user.displayName,
-msg:"Negociação recusada",
-time:Date.now()
+status: "recusado",
+propostas: arrayUnion({
+tipo: "status",
+user: user.displayName,
+msg: "Negociação recusada",
+time: Date.now()
 })
 });
 };
 
 /* RENDER */
 function render(data){
-lista.innerHTML="";
+lista.innerHTML = "";
 
-data.forEach(i=>{
+data.forEach(i => {
 
-const likes=Array.isArray(i.likes)?i.likes:[];
-const propostas=Array.isArray(i.propostas)?i.propostas:[];
+const likes = Array.isArray(i.likes) ? i.likes : [];
+const propostas = Array.isArray(i.propostas) ? i.propostas : [];
 
-lista.innerHTML+=`
+lista.innerHTML += `
 <div class="card">
 
-<h3>${i.nome||""}</h3>
-<p>${i.cidade||""} | ${i.categoria||""}</p>
-<p>${i.descricao||""}</p>
+<h3>${i.nome || ""}</h3>
+<p>${i.cidade || ""} | ${i.categoria || ""}</p>
+<p>${i.descricao || ""}</p>
 
-${i.status==="negociacao"?'<div class="badge">🟡 Em negociação</div>':""}
-${i.status==="aceito"?'<div class="badge">🟢 Aceito</div>':""}
-${i.status==="recusado"?'<div class="badge">🔴 Recusado</div>':""}
+${i.status === "livre" ? `<div class="badge">🟢 Disponível</div>` : ""}
+${i.status === "negociacao" ? `<div class="badge">🟡 Em negociação</div>` : ""}
+${i.status === "aceito" ? `<div class="badge">🟢 Aceito</div>` : ""}
+${i.status === "recusado" ? `<div class="badge">🔴 Recusado</div>` : ""}
 
-${i.imagem?`<img src="${i.imagem}">`:""}
+${i.imagem ? `<img src="${i.imagem}">` : ""}
 
 <button class="btn-blue" onclick="like('${i.id}',${JSON.stringify(likes)})">
 ❤️ ${likes.length}
 </button>
 
+${i.status === "livre" ? `
 <button class="btn-yellow" onclick="trocar('${i.id}')">
 🔁 Iniciar negociação
 </button>
+` : ""}
 
-${i.status==="negociacao" ? `
+${i.status === "negociacao" ? `
 <button class="btn-blue" onclick="aceitar('${i.id}')">✔ Aceitar</button>
 <button class="btn-red" onclick="recusar('${i.id}')">✖ Recusar</button>
 ` : ""}
@@ -194,10 +206,10 @@ ${i.status==="negociacao" ? `
 
 <div class="chat">
 
-${propostas.map(p=>`
+${propostas.map(p => `
 <p>
 <b>${p.user}</b>:
-${p.tipo==="status"?"⚡ ":""}
+${p.tipo === "status" ? "⚡ " : ""}
 ${p.msg}
 </p>
 `).join("")}
@@ -211,10 +223,10 @@ ${p.msg}
 });
 }
 
-/* FIRESTORE */
+/* FIRESTORE REALTIME */
 onSnapshot(collection(db,"itens"),snap=>{
-const data=[];
-snap.forEach(d=>data.push({id:d.id,...d.data()}));
+const data = [];
+snap.forEach(d => data.push({id:d.id,...d.data()}));
 render(data);
 });
 </script>
