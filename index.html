@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eco Troca - Projeto Escolar</title>
+<title>Eco Troca - Feira de Ciências</title>
 
 <style>
 body{
 font-family: Arial;
 margin:0;
-background:#f1f8f4;
-color:#222;
+background:#eef7ee;
 }
 
 header{
@@ -34,7 +33,7 @@ border-radius:10px;
 box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-input, textarea{
+input, select, textarea{
 width:100%;
 padding:10px;
 margin:5px 0;
@@ -50,31 +49,21 @@ cursor:pointer;
 margin-top:5px;
 }
 
-.btn{
-background:#2e7d32;
-color:white;
+.btn{background:#2e7d32;color:white;}
+.btn-blue{background:#1565c0;color:white;}
+.btn-red{background:#c62828;color:white;}
+.btn-yellow{background:#f9a825;color:black;}
+
+.userBox{
+display:flex;
+align-items:center;
+gap:10px;
 }
 
-.btn-red{
-background:#c62828;
-color:white;
-}
-
-.btn-blue{
-background:#1565c0;
-color:white;
-}
-
-.small{
-font-size:12px;
-color:#666;
-}
-
-.chat{
-background:#eee;
-padding:8px;
-margin-top:10px;
-border-radius:8px;
+.userBox img{
+width:40px;
+height:40px;
+border-radius:50%;
 }
 </style>
 </head>
@@ -83,18 +72,17 @@ border-radius:8px;
 
 <header>
 <h1>🌍 Eco Troca</h1>
-<p>Projeto escolar de sustentabilidade e reutilização de materiais</p>
+<p>Feira de Ciências - Sustentabilidade e Reutilização</p>
 </header>
 
 <div class="container">
 
-<!-- SOBRE -->
+<!-- LOGIN -->
 <div class="card">
-<h2>♻️ Sobre o projeto</h2>
-<p>
-O Eco Troca é uma plataforma criada para incentivar a troca de materiais escolares entre alunos,
-reduzindo o desperdício e promovendo a sustentabilidade.
-</p>
+<h2>👤 Usuário</h2>
+<div id="userInfo">Não logado</div>
+<button class="btn" onclick="loginGoogle()">Entrar com Google</button>
+<button class="btn-red" onclick="logout()">Sair</button>
 </div>
 
 <!-- PUBLICAR -->
@@ -103,13 +91,36 @@ reduzindo o desperdício e promovendo a sustentabilidade.
 
 <input id="nome" placeholder="Nome do item">
 <input id="cidade" placeholder="Cidade">
+
+<select id="categoria">
+<option value="Livro">📚 Livro</option>
+<option value="Caderno">📒 Caderno</option>
+<option value="Mochila">🎒 Mochila</option>
+<option value="Material">✏ Material escolar</option>
+</select>
+
 <textarea id="descricao" placeholder="Descrição"></textarea>
 <input id="imagem" placeholder="URL da imagem">
 
 <button class="btn" onclick="publicar()">Publicar</button>
 </div>
 
-<!-- LISTA -->
+<!-- FILTROS -->
+<div class="card">
+<h2>🔎 Filtros</h2>
+
+<input id="filtroCidade" placeholder="Filtrar por cidade">
+<select id="filtroCategoria">
+<option value="">Todas categorias</option>
+<option value="Livro">📚 Livro</option>
+<option value="Caderno">📒 Caderno</option>
+<option value="Mochila">🎒 Mochila</option>
+<option value="Material">✏ Material escolar</option>
+</select>
+
+<button class="btn-blue" onclick="aplicarFiltro()">Aplicar filtro</button>
+</div>
+
 <div id="listaItens"></div>
 
 </div>
@@ -128,6 +139,14 @@ arrayUnion,
 arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
+import {
+getAuth,
+GoogleAuthProvider,
+signInWithPopup,
+onAuthStateChanged,
+signOut
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
 /* FIREBASE */
 const firebaseConfig = {
 apiKey: "AIzaSyBQtiPkVwkTYNmbGXKD96FIOITKQ8oI62A",
@@ -140,115 +159,137 @@ appId: "1:813565372:web:470f850a6f11fda93b97b9"
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-/* usuário simples */
-let user = JSON.parse(localStorage.getItem("usuarioLogado") || "null");
-if(!user){
-user = { nome: "Aluno" };
+let user = null;
+let dadosCache = [];
+
+/* LOGIN */
+window.loginGoogle = async function(){
+const provider = new GoogleAuthProvider();
+await signInWithPopup(auth, provider);
 }
+
+window.logout = async function(){
+await signOut(auth);
+}
+
+/* USER */
+onAuthStateChanged(auth,(u)=>{
+user = u;
+
+document.getElementById("userInfo").innerHTML =
+user ? `👤 ${user.displayName}` : "Não logado";
+});
 
 /* PUBLICAR */
 window.publicar = async function(){
 
-let nome = document.getElementById("nome").value;
-let cidade = document.getElementById("cidade").value;
-let descricao = document.getElementById("descricao").value;
-let imagem = document.getElementById("imagem").value || "";
-
-if(!nome || !cidade){
-alert("Preencha os campos!");
+if(!user){
+alert("Faça login!");
 return;
 }
 
-await addDoc(collection(db, "itens"), {
-nome,
-cidade,
-descricao,
-imagem,
-owner: user.nome,
+await addDoc(collection(db,"itens"),{
+nome: nome.value,
+cidade: cidade.value,
+categoria: categoria.value,
+descricao: descricao.value,
+imagem: imagem.value || "",
+owner: user.displayName,
+photo: user.photoURL,
 likes: [],
 chat: []
 });
 
-alert("Item publicado!");
+alert("Publicado!");
 }
 
 /* CURTIR */
 window.like = async function(id, likes){
 
-let ref = doc(db, "itens", id);
+let ref = doc(db,"itens",id);
 
-if(likes.includes(user.nome)){
-await updateDoc(ref,{
-likes: arrayRemove(user.nome)
-});
+if(likes.includes(user.displayName)){
+await updateDoc(ref,{likes: arrayRemove(user.displayName)});
 }else{
-await updateDoc(ref,{
-likes: arrayUnion(user.nome)
-});
+await updateDoc(ref,{likes: arrayUnion(user.displayName)});
 }
 }
 
-/* CHAT */
-window.chat = async function(id){
-
-let msg = prompt("Digite sua mensagem:");
-if(!msg) return;
-
-let ref = doc(db, "itens", id);
-
-await updateDoc(ref,{
-chat: arrayUnion(user.nome + ": " + msg)
-});
+/* TROCA */
+window.trocar = function(nome){
+alert("Você demonstrou interesse em trocar com: " + nome);
 }
 
-/* EXCLUIR */
-window.excluir = async function(id){
-await deleteDoc(doc(db,"itens",id));
+/* FILTRO */
+window.aplicarFiltro = function(){
+
+let cidadeF = filtroCidade.value.toLowerCase();
+let catF = filtroCategoria.value;
+
+render(dadosCache, cidadeF, catF);
 }
 
 /* LISTA */
 const lista = document.getElementById("listaItens");
 
-onSnapshot(collection(db,"itens"), (snapshot)=>{
+function render(data, cidadeF="", catF=""){
 
 lista.innerHTML = "";
 
-snapshot.forEach((d)=>{
+data
+.filter(i=>{
+let okCidade = i.cidade.toLowerCase().includes(cidadeF);
+let okCat = catF ? i.categoria === catF : true;
+return okCidade && okCat;
+})
+.forEach((i,d)=>{
 
-let i = d.data();
 let likes = i.likes || [];
 let chat = i.chat || [];
-let isOwner = i.owner === user.nome;
+let isOwner = i.owner === user?.displayName;
 
 lista.innerHTML += `
 <div class="card">
 
 <h3>${i.nome}</h3>
 <p>📍 ${i.cidade}</p>
+<p>📚 ${i.categoria}</p>
 <p>${i.descricao}</p>
-<p class="small">por ${i.owner}</p>
+
+${i.photo ? `<div class="userBox">
+<img src="${i.photo}">
+<strong>${i.owner}</strong>
+</div>` : ""}
 
 ${i.imagem ? `<img src="${i.imagem}" style="width:100%;border-radius:10px;">` : ""}
 
-<button class="btn-blue" onclick="like('${d.id}', ${JSON.stringify(likes)})">
+<button class="btn-blue" onclick="like('${i.id}', ${JSON.stringify(likes)})">
 ❤️ Curtir (${likes.length})
 </button>
 
-<button class="btn-blue" onclick="chat('${d.id}')">💬 Chat</button>
+<button class="btn-yellow" onclick="trocar('${i.owner}')">
+🔁 Quero trocar
+</button>
 
-${isOwner ? `
-<button class="btn-red" onclick="excluir('${d.id}')">🗑 Excluir</button>
-` : ""}
-
-<div class="chat">
-${chat.map(c=>`<div>${c}</div>`).join("")}
-</div>
+${isOwner ? `<button class="btn-red" onclick="excluir('${i.id}')">🗑 Excluir</button>` : ""}
 
 </div>
 `;
 });
+}
 
+/* FIREBASE LISTENER */
+onSnapshot(collection(db,"itens"),(snapshot)=>{
+
+dadosCache = [];
+
+snapshot.forEach(d=>{
+dadosCache.push({id:d.id,...d.data()});
+});
+
+render(dadosCache);
 });
 </script>
 
