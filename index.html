@@ -12,7 +12,7 @@ arrayUnion,
 arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-/* 🔥 FIREBASE CONFIG (SEU PROJETO) */
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyBQtiPkVwkTYNmbGXKD96FIOITKQ8oI62A",
   authDomain: "eco-troca-fecb3.firebaseapp.com",
@@ -25,13 +25,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* USER LOCAL */
+window.onload = () => {
+
+/* USER */
 let user = JSON.parse(localStorage.getItem("usuarioLogado"));
 
-document.getElementById("usuarioBox").innerText =
-user ? "👤 " + user.nome : "Não logado";
+let usuarioBox = document.getElementById("usuarioBox");
+if(usuarioBox){
+usuarioBox.innerText = user ? "👤 " + user.nome : "Não logado";
+}
 
-/* PUBLICAR NA NUVEM */
+/* PUBLICAR */
 window.publicar = async function(){
 
 if(!user){
@@ -42,13 +46,12 @@ return;
 let nome = document.getElementById("nome").value;
 let cidade = document.getElementById("cidade").value;
 let descricao = document.getElementById("descricao").value;
+let imagem = document.getElementById("imagem")?.value || "";
 
 if(!nome || !cidade){
 alert("Preencha os campos!");
 return;
 }
-
-let imagem = document.getElementById("imagem")?.value || "";
 
 await addDoc(collection(db, "itens"), {
 nome,
@@ -60,7 +63,7 @@ chat: [],
 likes: []
 });
 
-alert("Publicado na nuvem 🌍");
+alert("Publicado 🌍");
 }
 
 /* EXCLUIR */
@@ -73,6 +76,8 @@ window.like = async function(id, likes, nomeUser){
 
 const ref = doc(db, "itens", id);
 
+likes = likes || [];
+
 if(likes.includes(nomeUser)){
 await updateDoc(ref, {
 likes: arrayRemove(nomeUser)
@@ -84,7 +89,7 @@ likes: arrayUnion(nomeUser)
 }
 }
 
-/* CHAT SIMPLES */
+/* CHAT */
 window.chat = async function(id){
 
 let msg = prompt("Mensagem:");
@@ -98,7 +103,7 @@ chat: arrayUnion(user.nome + ": " + msg)
 
 }
 
-/* RENDER EM TEMPO REAL */
+/* RENDER */
 window.render = function(){
 
 const lista = document.getElementById("listaItens");
@@ -113,22 +118,24 @@ let i = d.data();
 
 let isOwner = user && i.owner === user.nome;
 
+let likes = i.likes || [];
+let chat = i.chat || [];
+
 lista.innerHTML += `
 <div class="item">
 
-<h3>${i.nome}</h3>
+<h3>${i.nome || ""}</h3>
 
 ${i.imagem ? `
-<img src="${i.imagem}" 
-style="width:100%;border-radius:10px;margin-top:8px;">
+<img src="${i.imagem}" style="width:100%;border-radius:10px;margin-top:8px;">
 ` : ""}
 
-<p>${i.cidade}</p>
-<p>${i.descricao}</p>
-<p class="small">Por: ${i.owner}</p>
+<p>${i.cidade || ""}</p>
+<p>${i.descricao || ""}</p>
+<p class="small">Por: ${i.owner || ""}</p>
 
-<button onclick="like('${d.id}', ${JSON.stringify(i.likes)}, '${user?.nome || ""}')">
-❤️ Curtir (${i.likes ? i.likes.length : 0})
+<button onclick="like('${d.id}', ${JSON.stringify(likes)}, '${user?.nome || ""}')">
+❤️ Curtir (${likes.length})
 </button>
 
 <button onclick="chat('${d.id}')">💬 Chat</button>
@@ -140,7 +147,7 @@ ${isOwner ? `
 ` : ""}
 
 <div class="chat">
-${i.chat ? i.chat.map(c => `<div>${c}</div>`).join("") : ""}
+${chat.map(c => `<div>${c}</div>`).join("")}
 </div>
 
 </div>
@@ -152,4 +159,7 @@ ${i.chat ? i.chat.map(c => `<div>${c}</div>`).join("") : ""}
 }
 
 render();
+
+}; // fim window.onload
+
 </script>
