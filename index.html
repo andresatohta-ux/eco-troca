@@ -100,7 +100,9 @@ border-radius:50%;
 </select>
 
 <textarea id="descricao" placeholder="Descrição"></textarea>
-<input id="imagem" placeholder="URL da imagem">
+
+<!-- 📸 CÂMERA / GALERIA -->
+<input id="imagem" type="file" accept="image/*" capture="environment">
 
 <button class="btn" onclick="publicar()">Publicar</button>
 </div>
@@ -163,6 +165,19 @@ const auth = getAuth(app);
 
 let user = null;
 let dadosCache = [];
+let imagemBase64 = "";
+
+/* 📸 CAPTURA IMAGEM */
+document.getElementById("imagem").addEventListener("change", function(e){
+  const file = e.target.files[0];
+
+  const reader = new FileReader();
+  reader.onload = function(event){
+    imagemBase64 = event.target.result;
+  };
+
+  reader.readAsDataURL(file);
+});
 
 /* LOGIN */
 window.loginGoogle = async function(){
@@ -195,7 +210,7 @@ nome: nome.value,
 cidade: cidade.value,
 categoria: categoria.value,
 descricao: descricao.value,
-imagem: imagem.value || "",
+imagem: imagemBase64 || "",
 owner: user.displayName,
 photo: user.photoURL,
 likes: [],
@@ -247,7 +262,6 @@ return okCidade && okCat;
 .forEach((i,d)=>{
 
 let likes = i.likes || [];
-let chat = i.chat || [];
 let isOwner = i.owner === user?.displayName;
 
 lista.innerHTML += `
