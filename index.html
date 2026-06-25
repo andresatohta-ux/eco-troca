@@ -6,17 +6,129 @@
 <title>Eco Troca</title>
 
 <style>
-body{font-family:Arial;margin:0;background:#eef7ee}
-header{background:#2e7d32;color:#fff;padding:20px;text-align:center}
-.container{max-width:900px;margin:auto;padding:20px}
-.card{background:#fff;padding:15px;margin-bottom:15px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
-input,select,textarea{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:1px solid #ccc}
-button{padding:10px;border:none;border-radius:6px;cursor:pointer;margin-top:5px}
-.btn{background:#2e7d32;color:#fff}
-.btn-blue{background:#1565c0;color:#fff}
-.btn-red{background:#c62828;color:#fff}
-.btn-yellow{background:#f9a825;color:#000}
-.badge{padding:4px 8px;background:orange;color:white;border-radius:6px;font-size:12px}
+body{
+font-family:'Segoe UI',Arial;
+margin:0;
+background:linear-gradient(180deg,#e8f5e9,#f5fff5);
+color:#222;
+}
+
+/* HEADER */
+header{
+background:linear-gradient(135deg,#1b5e20,#2e7d32);
+color:white;
+padding:20px;
+text-align:center;
+position:sticky;
+top:0;
+box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+
+header h1{
+margin:0;
+font-size:22px;
+}
+
+/* CONTAINER */
+.container{
+max-width:900px;
+margin:auto;
+padding:15px;
+}
+
+/* CARD */
+.card{
+background:white;
+padding:16px;
+margin:12px 0;
+border-radius:16px;
+box-shadow:0 6px 18px rgba(0,0,0,0.08);
+transition:0.2s;
+}
+
+.card:hover{
+transform:scale(1.01);
+}
+
+/* INPUTS */
+input,select,textarea{
+width:100%;
+padding:12px;
+margin-top:8px;
+border-radius:10px;
+border:1px solid #ddd;
+background:#fafafa;
+font-size:14px;
+outline:none;
+}
+
+input:focus,textarea:focus,select:focus{
+border:1px solid #2e7d32;
+background:white;
+}
+
+/* BOTÕES */
+button{
+padding:10px 12px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-weight:bold;
+transition:0.2s;
+}
+
+button:hover{
+transform:scale(1.02);
+opacity:0.9;
+}
+
+.btn{background:#2e7d32;color:white}
+.btn-blue{background:#1565c0;color:white}
+.btn-red{background:#c62828;color:white}
+.btn-yellow{background:#f9a825;color:#111}
+
+/* BADGE */
+.badge{
+display:inline-block;
+margin-top:8px;
+padding:5px 10px;
+border-radius:20px;
+background:#ff9800;
+color:white;
+font-size:12px;
+}
+
+/* IMAGEM */
+img{
+width:100%;
+border-radius:12px;
+margin-top:10px;
+}
+
+/* CHAT */
+.chat{
+background:#f4f4f4;
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+max-height:160px;
+overflow:auto;
+font-size:13px;
+}
+
+/* LAYOUT BOTÕES */
+.actions{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+margin-top:10px;
+}
+
+/* USER */
+#userInfo{
+margin:10px 0;
+font-weight:bold;
+}
 </style>
 </head>
 
@@ -24,7 +136,7 @@ button{padding:10px;border:none;border-radius:6px;cursor:pointer;margin-top:5px}
 
 <header>
 <h1>🌍 Eco Troca</h1>
-<p>Feira de Ciências</p>
+<p>Trocas sustentáveis entre alunos</p>
 </header>
 
 <div class="container">
@@ -73,7 +185,7 @@ import {
 getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 
-/* FIREBASE CONFIG */
+/* FIREBASE */
 const firebaseConfig = {
 apiKey:"AIzaSyBQtiPkVwkTYNmbGXKD96FIOITKQ8oI62A",
 authDomain:"eco-troca-fecb3.firebaseapp.com",
@@ -88,9 +200,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 let user=null;
-let dadosCache=[];
 let imagemBase64="";
-
 const lista=document.getElementById("listaItens");
 
 /* IMAGEM */
@@ -121,14 +231,12 @@ cidade:cidade.value,
 categoria:categoria.value,
 descricao:descricao.value,
 imagem:imagemBase64||"",
-owner:user.displayName,
 uid:user.uid,
+owner:user.displayName,
 likes:[],
 chat:[],
 status:"livre"
 });
-
-alert("Publicado!");
 };
 
 /* LIKE */
@@ -159,7 +267,7 @@ time:Date.now()
 });
 };
 
-/* ENVIAR MENSAGEM */
+/* MENSAGEM */
 window.enviarMsg=async(id)=>{
 if(!user)return;
 
@@ -189,8 +297,6 @@ data.forEach(i=>{
 const likes=Array.isArray(i.likes)?i.likes:[];
 const chat=Array.isArray(i.chat)?i.chat:[];
 
-const isOwner=i.uid===user?.uid;
-
 lista.innerHTML+=`
 <div class="card">
 
@@ -200,7 +306,9 @@ lista.innerHTML+=`
 
 ${i.status==="negociacao"?'<div class="badge">🟡 Em negociação</div>':""}
 
-${i.imagem?`<img src="${i.imagem}" style="width:100%">`:""}
+${i.imagem?`<img src="${i.imagem}">`:""}
+
+<div class="actions">
 
 <button class="btn-blue" onclick="like('${i.id}',${JSON.stringify(likes)})">
 ❤️ ${likes.length}
@@ -210,14 +318,16 @@ ${i.imagem?`<img src="${i.imagem}" style="width:100%">`:""}
 🔁 Trocar
 </button>
 
+</div>
+
 <div style="margin-top:10px">
 
 <input id="msg-${i.id}" placeholder="Mensagem...">
 <button class="btn-blue" onclick="enviarMsg('${i.id}')">Enviar</button>
 
-<div>
+<div class="chat">
 ${chat.map(m=>`
-<p>👤 ${m.user||"user"}: ${m.msg||""}</p>
+<p><b>${m.user}</b>: ${m.msg}</p>
 `).join("")}
 </div>
 
@@ -230,9 +340,9 @@ ${chat.map(m=>`
 
 /* FIRESTORE REALTIME */
 onSnapshot(collection(db,"itens"),snap=>{
-dadosCache=[];
-snap.forEach(d=>dadosCache.push({id:d.id,...d.data()}));
-render(dadosCache);
+const data=[];
+snap.forEach(d=>data.push({id:d.id,...d.data()}));
+render(data);
 });
 </script>
 
