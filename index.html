@@ -1,3 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eco Troca</title>
+
+<style>
+body{
+font-family: Arial;
+background:#f2f2f2;
+margin:0;
+padding:20px;
+}
+
+.item{
+background:#fff;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+}
+
+button{
+margin-top:5px;
+padding:8px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.chat{
+background:#eee;
+margin-top:10px;
+padding:8px;
+border-radius:8px;
+font-size:14px;
+}
+
+.small{
+font-size:12px;
+color:#555;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🌍 Eco Troca</h2>
+
+<div id="usuarioBox"></div>
+
+<hr>
+
+<h3>Publicar item</h3>
+
+<input id="nome" placeholder="Nome"><br><br>
+<input id="cidade" placeholder="Cidade"><br><br>
+<textarea id="descricao" placeholder="Descrição"></textarea><br><br>
+<input id="imagem" placeholder="URL da imagem"><br><br>
+
+<button onclick="publicar()">Publicar</button>
+
+<hr>
+
+<div id="listaItens"></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import {
@@ -14,12 +80,12 @@ arrayRemove
 
 /* FIREBASE */
 const firebaseConfig = {
-  apiKey: "AIzaSyBQtiPkVwkTYNmbGXKD96FIOITKQ8oI62A",
-  authDomain: "eco-troca-fecb3.firebaseapp.com",
-  projectId: "eco-troca-fecb3",
-  storageBucket: "eco-troca-fecb3.firebasestorage.app",
-  messagingSenderId: "813565372",
-  appId: "1:813565372:web:470f850a6f11fda93b97b9"
+apiKey: "AIzaSyBQtiPkVwkTYNmbGXKD96FIOITKQ8oI62A",
+authDomain: "eco-troca-fecb3.firebaseapp.com",
+projectId: "eco-troca-fecb3",
+storageBucket: "eco-troca-fecb3.firebasestorage.app",
+messagingSenderId: "813565372",
+appId: "1:813565372:web:470f850a6f11fda93b97b9"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -64,7 +130,6 @@ likes: []
 });
 
 alert("Publicado 🌍");
-
 }
 
 /* EXCLUIR */
@@ -74,6 +139,8 @@ await deleteDoc(doc(db, "itens", id));
 
 /* CURTIR */
 window.like = async function(id, likes, nomeUser){
+
+nomeUser = nomeUser || "";
 
 const ref = doc(db, "itens", id);
 
@@ -101,10 +168,9 @@ const ref = doc(db, "itens", id);
 await updateDoc(ref, {
 chat: arrayUnion(user?.nome + ": " + msg)
 });
-
 }
 
-/* RENDER */
+/* RENDER (CORRIGIDO - SEM DUPLICAR LISTENER) */
 function render(){
 
 const lista = document.getElementById("listaItens");
@@ -143,7 +209,7 @@ ${i.imagem ? `
 <button onclick="chat('${d.id}')">💬 Chat</button>
 
 ${isOwner ? `
-<button onclick="excluir('${d.id}')" style="background:#d32f2f;">
+<button onclick="excluir('${d.id}')" style="background:#d32f2f;color:white;">
 🗑 Excluir
 </button>
 ` : ""}
@@ -161,7 +227,12 @@ ${chat.map(c => `<div>${c}</div>`).join("")}
 }
 
 /* START */
+window.onload = () => {
 setUserBox();
 render();
+};
 
 </script>
+
+</body>
+</html>
