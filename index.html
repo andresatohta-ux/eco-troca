@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -13,6 +14,10 @@ margin:0;
 padding:0;
 box-sizing:border-box;
 font-family:Arial,sans-serif;
+}
+
+html{
+scroll-behavior:smooth;
 }
 
 body{
@@ -34,9 +39,13 @@ font-weight:bold;
 color:#2e7d32;
 }
 
+nav{
+display:flex;
+gap:20px;
+}
+
 nav a{
 text-decoration:none;
-margin-left:20px;
 color:#2e7d32;
 font-weight:bold;
 }
@@ -106,6 +115,7 @@ background:#43a047;
 color:white;
 border:none;
 border-radius:8px;
+cursor:pointer;
 }
 
 #listaItens{
@@ -135,13 +145,13 @@ text-align:center;
 padding:25px;
 margin-top:50px;
 }
-@media (max-width: 768px){
+
+@media(max-width:768px){
 
 header{
 flex-direction:column;
 padding:15px;
 gap:15px;
-text-align:center;
 }
 
 .logo{
@@ -149,18 +159,8 @@ font-size:24px;
 }
 
 nav{
-display:flex;
 flex-wrap:wrap;
 justify-content:center;
-gap:10px;
-}
-
-nav a{
-margin:0;
-}
-
-.hero{
-padding:40px 15px;
 }
 
 .hero h1{
@@ -169,10 +169,6 @@ font-size:32px;
 
 .hero p{
 font-size:16px;
-}
-
-.cards{
-padding:20px;
 }
 
 .card{
@@ -187,21 +183,14 @@ padding:20px;
 
 #listaItens{
 grid-template-columns:1fr;
-padding:20px;
 }
 
-.item{
-width:100%;
 }
 
-#usuario{
-font-size:16px;
-text-align:center;
-}
-}
 </style>
 
 </head>
+
 <body>
 
 <header>
@@ -220,6 +209,7 @@ text-align:center;
 <div id="usuario"></div>
 
 </header>
+
 <section class="hero" id="inicio">
 
 <h1>Troque hoje, transforme o amanhã!</h1>
@@ -253,7 +243,9 @@ Quero Trocar
 
 </section>
 
-
+<h2 class="titulo">
+Publicar Item
+</h2>
 
 <section class="formulario">
 
@@ -283,13 +275,12 @@ Itens Disponíveis
 Projeto Escolar de Sustentabilidade
 </p>
 
-<footer id="sobre">
+</footer>
 
 <script>
 
 let itens =
-JSON.parse(localStorage.getItem("itens"))
-|| [];
+JSON.parse(localStorage.getItem("itens")) || [];
 
 function publicarItem(){
 
@@ -297,9 +288,11 @@ let usuario =
 JSON.parse(localStorage.getItem("usuarioLogado"));
 
 if(!usuario){
+
 alert("Faça login para publicar um item.");
 window.location.href="login.html";
 return;
+
 }
 
 let nome =
@@ -310,20 +303,12 @@ document.getElementById("cidade").value;
 
 let descricao =
 document.getElementById("descricao").value;
-let nome =
-document.getElementById("nome").value;
 
-let cidade =
-document.getElementById("cidade").value;
-
-let descricao =
-document.getElementById("descricao").value;
-
-if(nome == "" || cidade == ""){
+if(nome === "" || cidade === ""){
 
 alert("Preencha os campos!");
-
 return;
+
 }
 
 itens.push({
@@ -342,6 +327,9 @@ mostrarItens();
 document.getElementById("nome").value="";
 document.getElementById("cidade").value="";
 document.getElementById("descricao").value="";
+
+alert("Item publicado com sucesso!");
+
 }
 
 function mostrarItens(){
@@ -355,56 +343,31 @@ itens.forEach(item=>{
 
 lista.innerHTML += `
 <div class="item">
-
 <h3>${item.nome}</h3>
-
 <p><b>Cidade:</b> ${item.cidade}</p>
-
 <p>${item.descricao}</p>
-
 </div>
 `;
 
 });
+
 }
 
 mostrarItens();
+
 let usuario =
-JSON.parse(
-localStorage.getItem("usuarioLogado")
-);
+JSON.parse(localStorage.getItem("usuarioLogado"));
 
 if(usuario){
 
-document.getElementById("usuario")
-.innerHTML =
+document.getElementById("usuario").innerHTML =
 `<a href="perfil.html" style="text-decoration:none;color:#2e7d32;font-weight:bold;">
 👤 ${usuario.nome}
 </a>`;
 
 }
+
 </script>
-function publicarItem(){
 
-let usuario =
-JSON.parse(localStorage.getItem("usuarioLogado"));
-
-if(!usuario){
-alert("Faça login para publicar um item.");
-window.location.href="login.html";
-return;
-}
-
-let nome =
-document.getElementById("nome").value;
-
-let cidade =
-document.getElementById("cidade").value;
-
-let descricao =
-document.getElementById("descricao").value;
-
-// resto da função...
-}
 </body>
 </html>
