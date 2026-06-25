@@ -324,13 +324,21 @@ JSON.stringify(itens)
 
 mostrarItens();
 
-document.getElementById("nome").value="";
-document.getElementById("cidade").value="";
-document.getElementById("descricao").value="";
+lista.innerHTML += `
+<div class="item">
 
-alert("Item publicado com sucesso!");
+<h3>${item.nome}</h3>
 
-}
+<p><b>Cidade:</b> ${item.cidade}</p>
+
+<p>${item.descricao}</p>
+
+<button onclick="excluirItem(${index})">
+🗑️ Excluir
+</button>
+
+</div>
+`;
 
 function mostrarItens(){
 
