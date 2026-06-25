@@ -4,11 +4,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Eco Troca</title>
 
 <style>
-
 *{
 margin:0;
 padding:0;
@@ -132,6 +130,16 @@ border-radius:12px;
 box-shadow:0 2px 10px rgba(0,0,0,.1);
 }
 
+.item button{
+margin-top:10px;
+padding:8px 12px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+background:#d32f2f;
+color:white;
+}
+
 .titulo{
 text-align:center;
 margin-top:40px;
@@ -186,7 +194,6 @@ grid-template-columns:1fr;
 }
 
 }
-
 </style>
 
 </head>
@@ -195,9 +202,7 @@ grid-template-columns:1fr;
 
 <header>
 
-<div class="logo">
-🌱 Eco Troca
-</div>
+<div class="logo">🌱 Eco Troca</div>
 
 <nav>
 <a href="#inicio">Início</a>
@@ -214,9 +219,7 @@ grid-template-columns:1fr;
 
 <h1>Troque hoje, transforme o amanhã!</h1>
 
-<p>
-Troque objetos usados e ajude o meio ambiente.
-</p>
+<p>Troque objetos usados e ajude o meio ambiente.</p>
 
 <button onclick="document.querySelector('.formulario').scrollIntoView({behavior:'smooth'})">
 Quero Trocar
@@ -243,9 +246,7 @@ Quero Trocar
 
 </section>
 
-<h2 class="titulo">
-Publicar Item
-</h2>
+<h2 class="titulo">Publicar Item</h2>
 
 <section class="formulario">
 
@@ -268,13 +269,8 @@ Itens Disponíveis
 <div id="listaItens"></div>
 
 <footer id="sobre">
-
 <h2>Eco Troca</h2>
-
-<p>
-Projeto Escolar de Sustentabilidade
-</p>
-
+<p>Projeto Escolar de Sustentabilidade</p>
 </footer>
 
 <script>
@@ -324,21 +320,30 @@ JSON.stringify(itens)
 
 mostrarItens();
 
-lista.innerHTML += `
-<div class="item">
+document.getElementById("nome").value="";
+document.getElementById("cidade").value="";
+document.getElementById("descricao").value="";
 
-<h3>${item.nome}</h3>
+alert("Item publicado com sucesso!");
 
-<p><b>Cidade:</b> ${item.cidade}</p>
+}
 
-<p>${item.descricao}</p>
+function excluirItem(index){
 
-<button onclick="excluirItem(${index})">
-🗑️ Excluir
-</button>
+if(confirm("Deseja excluir este item?")){
 
-</div>
-`;
+itens.splice(index,1);
+
+localStorage.setItem(
+"itens",
+JSON.stringify(itens)
+);
+
+mostrarItens();
+
+}
+
+}
 
 function mostrarItens(){
 
@@ -347,13 +352,18 @@ document.getElementById("listaItens");
 
 lista.innerHTML="";
 
-itens.forEach(item=>{
+itens.forEach((item,index)=>{
 
 lista.innerHTML += `
 <div class="item">
 <h3>${item.nome}</h3>
 <p><b>Cidade:</b> ${item.cidade}</p>
 <p>${item.descricao}</p>
+
+<button onclick="excluirItem(${index})">
+🗑️ Excluir
+</button>
+
 </div>
 `;
 
