@@ -6,49 +6,38 @@
 <title>Eco Troca</title>
 
 <style>
-body{
-font-family:'Segoe UI',Arial;
-margin:0;
-background:linear-gradient(180deg,#e8f5e9,#f5fff5);
-color:#222;
-}
-
-/* HEADER */
-header{
-background:linear-gradient(135deg,#1b5e20,#2e7d32);
-color:white;<style>
-/* 🌿 FUNDO GERAL */
+/* 🌑 FUNDO DARK MODERNO */
 body{
 margin:0;
 font-family:'Segoe UI', Arial;
-background: radial-gradient(circle at top, #e8f5e9, #f1f8e9, #ffffff);
-color:#1b1b1b;
+background: radial-gradient(circle at top,#0f172a,#050816,#000);
+color:#e5e7eb;
 }
 
-/* 🌍 HEADER MODERNO */
+/* 🌍 HEADER NEON */
 header{
 position:sticky;
 top:0;
 z-index:10;
 padding:18px;
 text-align:center;
-background: rgba(27,94,32,0.95);
+background: rgba(0,0,0,0.7);
 backdrop-filter: blur(10px);
-color:white;
-box-shadow:0 6px 20px rgba(0,0,0,0.25);
-border-bottom:1px solid rgba(255,255,255,0.1);
+border-bottom:1px solid rgba(34,211,238,0.3);
+box-shadow:0 0 20px rgba(34,211,238,0.15);
 }
 
 header h1{
 margin:0;
 font-size:22px;
-letter-spacing:1px;
+color:#22d3ee;
+text-shadow:0 0 10px rgba(34,211,238,0.6);
 }
 
 header p{
 margin:5px 0 0;
-font-size:13px;
-opacity:0.8;
+font-size:12px;
+opacity:0.7;
 }
 
 /* 📦 CONTAINER */
@@ -58,43 +47,43 @@ margin:auto;
 padding:15px;
 }
 
-/* 🧩 CARDS (GLASS STYLE) */
+/* 🧩 CARD DARK GLASS */
 .card{
-background: rgba(255,255,255,0.85);
-backdrop-filter: blur(8px);
-border:1px solid rgba(0,0,0,0.05);
+background: rgba(15,23,42,0.75);
+backdrop-filter: blur(10px);
+border:1px solid rgba(34,211,238,0.15);
 padding:16px;
 margin:14px 0;
-border-radius:18px;
-box-shadow:0 10px 25px rgba(0,0,0,0.08);
-transition:0.25s ease;
+border-radius:16px;
+box-shadow:0 0 20px rgba(0,0,0,0.4);
+transition:0.25s;
 }
 
 .card:hover{
-transform: translateY(-3px);
-box-shadow:0 14px 30px rgba(0,0,0,0.12);
+transform:translateY(-4px);
+border:1px solid rgba(34,211,238,0.4);
+box-shadow:0 0 25px rgba(34,211,238,0.15);
 }
 
-/* ✏️ INPUTS MODERNOS */
+/* ✏️ INPUTS NEON */
 input,select,textarea{
 width:100%;
 padding:12px;
 margin-top:8px;
 border-radius:12px;
-border:1px solid rgba(0,0,0,0.1);
-background:#f9f9f9;
-font-size:14px;
+border:1px solid rgba(34,211,238,0.2);
+background:#0b1220;
+color:#e5e7eb;
 outline:none;
 transition:0.2s;
 }
 
 input:focus,textarea:focus,select:focus{
-border:1px solid #2e7d32;
-background:white;
-box-shadow:0 0 0 3px rgba(46,125,50,0.15);
+border:1px solid #22d3ee;
+box-shadow:0 0 10px rgba(34,211,238,0.3);
 }
 
-/* 🔘 BOTÕES PREMIUM */
+/* 🔘 BOTÕES NEON */
 button{
 padding:10px 14px;
 border:none;
@@ -105,40 +94,43 @@ transition:0.2s;
 }
 
 button:hover{
-transform:scale(1.03);
-opacity:0.9;
+transform:scale(1.05);
 }
 
 .btn{
-background:linear-gradient(135deg,#2e7d32,#43a047);
+background:linear-gradient(135deg,#22c55e,#16a34a);
 color:white;
+box-shadow:0 0 10px rgba(34,197,94,0.3);
 }
 
 .btn-blue{
-background:linear-gradient(135deg,#1565c0,#1e88e5);
+background:linear-gradient(135deg,#0ea5e9,#3b82f6);
 color:white;
+box-shadow:0 0 10px rgba(59,130,246,0.3);
 }
 
 .btn-red{
-background:linear-gradient(135deg,#c62828,#e53935);
+background:linear-gradient(135deg,#ef4444,#dc2626);
 color:white;
+box-shadow:0 0 10px rgba(239,68,68,0.3);
 }
 
 .btn-yellow{
-background:linear-gradient(135deg,#f9a825,#fdd835);
-color:#111;
+background:linear-gradient(135deg,#facc15,#eab308);
+color:black;
+box-shadow:0 0 10px rgba(250,204,21,0.2);
 }
 
-/* 🟡 STATUS */
+/* 🟡 BADGE */
 .badge{
 display:inline-block;
 padding:6px 12px;
-margin-top:10px;
 border-radius:999px;
 font-size:12px;
-background:linear-gradient(135deg,#ff9800,#ffb74d);
-color:white;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
+margin-top:8px;
+background:rgba(250,204,21,0.15);
+color:#facc15;
+border:1px solid rgba(250,204,21,0.4);
 }
 
 /* 🖼️ IMAGEM */
@@ -146,29 +138,30 @@ img{
 width:100%;
 border-radius:14px;
 margin-top:10px;
-box-shadow:0 6px 15px rgba(0,0,0,0.1);
+border:1px solid rgba(34,211,238,0.15);
 }
 
-/* 💬 CHAT STYLE */
+/* 💬 CHAT */
 .chat{
-background:#f5f5f5;
+background:#0b1220;
 padding:10px;
 border-radius:12px;
 margin-top:10px;
 max-height:160px;
 overflow:auto;
 font-size:13px;
-border:1px solid rgba(0,0,0,0.05);
+border:1px solid rgba(34,211,238,0.1);
 }
 
 /* 👤 USER */
 #userInfo{
 margin:10px 0;
 font-weight:600;
-color:#2e7d32;
+color:#22d3ee;
+text-shadow:0 0 5px rgba(34,211,238,0.4);
 }
 
-/* 🔥 LAYOUT AÇÕES */
+/* 🔥 AÇÕES */
 .actions{
 display:flex;
 gap:10px;
@@ -176,11 +169,10 @@ flex-wrap:wrap;
 margin-top:10px;
 }
 
-/* 📱 RESPONSIVO */
-@media (max-width:600px){
+/* 📱 MOBILE */
+@media(max-width:600px){
 .card{
 padding:14px;
-border-radius:14px;
 }
 
 button{
