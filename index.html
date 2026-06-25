@@ -45,7 +45,7 @@ user?user.displayName:"Não logado";
 
 /* 📦 PUBLICAR */
 window.publicar=async()=>{
-if(!user)return alert("login!");
+if(!user)return alert("Faça login!");
 
 await addDoc(collection(db,"itens"),{
 nome:nome.value,
@@ -56,7 +56,7 @@ imagem:imagemBase64||"",
 owner:user.displayName,
 uid:user.uid,
 likes:[],
-chat:{},
+chat:[],
 status:"livre",
 interessado:null
 });
@@ -64,17 +64,21 @@ interessado:null
 alert("Publicado!");
 };
 
-/* ❤️ LIKE (TOGGLE) */
+/* ❤️ LIKE (TOGGLE CORRIGIDO) */
 window.like=async(id,likes)=>{
 if(!user)return;
 
 const ref=doc(db,"itens",id);
-const nome=user.displayName;
+const nomeUser=user.displayName;
 
-if((likes||[]).includes(nome)){
-await updateDoc(ref,{likes:arrayRemove(nome)});
+if((likes||[]).includes(nomeUser)){
+await updateDoc(ref,{
+likes:arrayRemove(nomeUser)
+});
 }else{
-await updateDoc(ref,{likes:arrayUnion(nome)});
+await updateDoc(ref,{
+likes:arrayUnion(nomeUser)
+});
 }
 };
 
@@ -82,51 +86,38 @@ await updateDoc(ref,{likes:arrayUnion(nome)});
 window.trocar=async(id)=>{
 if(!user)return;
 
-const ref=doc(db,"itens",id);
-
-await updateDoc(ref,{
+await updateDoc(doc(db,"itens",id),{
 status:"negociacao",
 interessado:{
 uid:user.uid,
 nome:user.displayName
-},
-[`chat.${user.uid}`]:arrayUnion({
-user:user.displayName,
-msg:"Tenho interesse na troca",
-time:Date.now()
-})
+}
 });
 };
 
 /* 🟢 ACEITAR */
 window.aceitar=async(id)=>{
-const ref=doc(db,"itens",id);
-
-await updateDoc(ref,{
+await updateDoc(doc(db,"itens",id),{
 status:"aceito"
 });
 };
 
 /* 🔴 RECUSAR */
 window.recusar=async(id)=>{
-const ref=doc(db,"itens",id);
-
-await updateDoc(ref,{
+await updateDoc(doc(db,"itens",id),{
 status:"livre",
 interessado:null
 });
 };
 
-/* 💬 ENVIAR MENSAGEM */
+/* 💬 ENVIAR MENSAGEM (CHAT GLOBAL) */
 window.enviarMsg=async(id)=>{
 const input=document.getElementById("msg-"+id);
 const msg=input.value;
 if(!msg)return;
 
-const ref=doc(db,"itens",id);
-
-await updateDoc(ref,{
-[`chat.${user.uid}`]:arrayUnion({
+await updateDoc(doc(db,"itens",id),{
+chat:arrayUnion({
 user:user.displayName,
 msg,
 time:Date.now()
@@ -145,7 +136,7 @@ filtroCategoria.value
 );
 };
 
-/* 🧱 RENDER */
+/* 🧱 RENDER CORRIGIDO */
 const lista=document.getElementById("listaItens");
 
 function render(data,cidadeF="",catF=""){
@@ -160,7 +151,7 @@ return i.cidade.toLowerCase().includes(cidadeF)
 .forEach(i=>{
 
 const likes=i.likes||[];
-const chat=i.chat?.[user?.uid]||[];
+const chat=i.chat||[];
 
 lista.innerHTML+=`
 <div class="card">
@@ -190,13 +181,12 @@ ${i.interessado && i.owner===user?.displayName?`
 <div style="margin-top:10px">
 <strong>💬 Chat</strong>
 
-<input id="msg-${i.id}" placeholder="Mensagem...">
-<button class="btn-blue" onclick="enviarMsg('${i.id}')">Enviar</button>
-
 <div>
 ${chat.map(m=>`<p>👤 ${m.user}: ${m.msg}</p>`).join("")}
 </div>
 
+<input id="msg-${i.id}" placeholder="Mensagem...">
+<button class="btn-blue" onclick="enviarMsg('${i.id}')">Enviar</button>
 </div>
 
 </div>
