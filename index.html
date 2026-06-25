@@ -1,118 +1,128 @@
-/* 🔁 PEDIR TROCA + CHAT INICIAL */
+/* =========================
+   🔁 PEDIR TROCA + CHAT INICIAL
+========================= */
 window.trocar = async (id) => {
-if (!user) return;
+  if (!user) return;
 
-const ref = doc(db, "itens", id);
-
-await updateDoc(ref, {
-status: "negociacao",
-interessado: {
-uid: user.uid,
-nome: user.displayName
-},
-chat: arrayUnion({
-user: user.displayName,
-msg: "Tenho interesse na troca",
-time: Date.now()
-})
-});
+  await updateDoc(doc(db, "itens", id), {
+    status: "negociacao",
+    interessado: {
+      uid: user.uid,
+      nome: user.displayName
+    },
+    chat: arrayUnion({
+      user: user.displayName,
+      msg: "Tenho interesse na troca",
+      time: Date.now()
+    })
+  });
 };
 
-/* 🟢 ACEITAR */
+/* =========================
+   🟢 ACEITAR
+========================= */
 window.aceitar = async (id) => {
-if (!user) return;
+  if (!user) return;
 
-await updateDoc(doc(db, "itens", id), {
-status: "aceito"
-});
+  await updateDoc(doc(db, "itens", id), {
+    status: "aceito"
+  });
 };
 
-/* 🔴 RECUSAR */
+/* =========================
+   🔴 RECUSAR
+========================= */
 window.recusar = async (id) => {
-if (!user) return;
+  if (!user) return;
 
-await updateDoc(doc(db, "itens", id), {
-status: "livre",
-interessado: null
-});
+  await updateDoc(doc(db, "itens", id), {
+    status: "livre",
+    interessado: null
+  });
 };
 
-/* 💬 ENVIAR MENSAGEM */
+/* =========================
+   💬 ENVIAR MENSAGEM
+========================= */
 window.enviarMsg = async (id) => {
-if (!user) return;
+  if (!user) return;
 
-const input = document.getElementById("msg-" + id);
-const msg = (input?.value || "").trim();
-if (!msg) return;
+  const input = document.getElementById("msg-" + id);
+  const msg = (input?.value || "").trim();
+  if (!msg) return;
 
-await updateDoc(doc(db, "itens", id), {
-chat: arrayUnion({
-user: user.displayName,
-msg,
-time: Date.now()
-})
-});
+  await updateDoc(doc(db, "itens", id), {
+    chat: arrayUnion({
+      user: user.displayName,
+      msg,
+      time: Date.now()
+    })
+  });
 
-input.value = "";
+  input.value = "";
 };
 
-/* 🧱 RENDER (CORRIGIDO E ESTÁVEL) */
+/* =========================
+   🧱 RENDER (CORRIGIDO)
+========================= */
 function render(data, cidadeF = "", catF = "") {
+  lista.innerHTML = "";
 
-lista.innerHTML = "";
+  data
+    .filter(i => {
+      const cidade = (i.cidade || "").toLowerCase();
+      const categoria = i.categoria || "";
 
-data
-.filter(i => {
-const cidade = (i.cidade || "").toLowerCase();
-const categoria = i.categoria || "";
+      return cidade.includes(cidadeF) && (!catF || categoria === catF);
+    })
+    .forEach(i => {
 
-return cidade.includes(cidadeF) && (!catF || categoria === catF);
-})
-.forEach(i => {
+      const likes = Array.isArray(i.likes) ? i.likes : [];
+      const chat = Array.isArray(i.chat) ? i.chat : [];
 
-const likes = i.likes || [];
-const chat = i.chat || [];
-const isOwner = i.owner === user?.displayName;
+      const isOwner = i.ownerUid === user?.uid; // ✔ CORRIGIDO
 
-lista.innerHTML += `
-<div class="card">
+      lista.innerHTML += `
+        <div class="card">
 
-<h3>${i.nome || ""}</h3>
-<p>${i.cidade || ""} | ${i.categoria || ""}</p>
-<p>${i.descricao || ""}</p>
+          <h3>${i.nome || ""}</h3>
+          <p>${i.cidade || ""} | ${i.categoria || ""}</p>
+          <p>${i.descricao || ""}</p>
 
-${i.imagem ? `<img src="${i.imagem}" style="width:100%;border-radius:10px">` : ""}
+          ${i.imagem ? `<img src="${i.imagem}" style="width:100%;border-radius:10px">` : ""}
 
-${i.status === "negociacao" ? '<div class="badge">🟡 Em negociação</div>' : ""}
-${i.status === "aceito" ? '<div class="badge" style="background:green">🟢 Aceito</div>' : ""}
+          ${i.status === "negociacao" ? '<div class="badge">🟡 Em negociação</div>' : ""}
+          ${i.status === "aceito" ? '<div class="badge" style="background:green">🟢 Aceito</div>' : ""}
 
-<button class="btn-blue" onclick="like('${i.id}', ${JSON.stringify(likes)})">
-❤️ ${likes.length}
-</button>
+          <button class="btn-blue" onclick="like('${i.id}')">
+            ❤️ ${likes.length}
+          </button>
 
-<button class="btn-yellow" onclick="trocar('${i.id}')">
-🔁 Trocar
-</button>
+          <button class="btn-yellow" onclick="trocar('${i.id}')">
+            🔁 Trocar
+          </button>
 
-${isOwner ? `
-<button class="btn-blue" onclick="aceitar('${i.id}')">✔ Aceitar</button>
-<button class="btn-red" onclick="recusar('${i.id}')">✖ Recusar</button>
-` : ""}
+          ${isOwner ? `
+            <button class="btn-blue" onclick="aceitar('${i.id}')">✔ Aceitar</button>
+            <button class="btn-red" onclick="recusar('${i.id}')">✖ Recusar</button>
+          ` : ""}
 
-<div style="margin-top:10px">
-<strong>💬 Chat</strong>
+          <div style="margin-top:10px">
+            <strong>💬 Chat</strong>
 
-<div>
-${chat.map(m => `
-<p>👤 ${m.user || "user"}: ${m.msg || ""}</p>
-`).join("")}
-</div>
+            <div>
+              ${chat.map(m => `
+                <p>👤 ${m.user || "user"}: ${m.msg || ""}</p>
+              `).join("")}
+            </div>
 
-<input id="msg-${i.id}" placeholder="Mensagem...">
-<button class="btn-blue" onclick="enviarMsg('${i.id}')">Enviar</button>
-</div>
+            <input id="msg-${i.id}" placeholder="Mensagem...">
+            <button class="btn-blue" onclick="enviarMsg('${i.id}')">
+              Enviar
+            </button>
+          </div>
 
-</div>
-`;
-});
+        </div>
+      `;
+    });
 }
